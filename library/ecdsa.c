@@ -1,7 +1,9 @@
 /*
  *  Elliptic curve DSA
  *
- *  Copyright The Mbed TLS Contributors
+ *  Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+ *  Copyright (c) 2019 Nuclei Limited. All rights reserved.
+ *
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -208,6 +210,13 @@ static void ecdsa_restart_det_free( mbedtls_ecdsa_restart_det_ctx *ctx )
 #if defined(MBEDTLS_ECDSA_DETERMINISTIC) || \
     !defined(MBEDTLS_ECDSA_SIGN_ALT)     || \
     !defined(MBEDTLS_ECDSA_VERIFY_ALT)
+
+
+#if defined(MBEDTLS_ECC_SW_BACKGROUND_ALT)
+extern int ecp_sw_nist_curve_init(const mbedtls_mpi *N, const mbedtls_mpi *B);
+extern int ecp_sw_secg_brainpool_curve_init(const mbedtls_mpi *N, const mbedtls_mpi *A, const mbedtls_mpi *B);
+#endif
+
 /*
  * Derive a suitable integer for group grp from a buffer of length len
  * SEC1 4.1.3 step 5 aka SEC1 4.1.4 step 3
@@ -786,6 +795,16 @@ int mbedtls_ecdsa_genkey( mbedtls_ecdsa_context *ctx, mbedtls_ecp_group_id gid,
     ret = mbedtls_ecp_group_load( &ctx->grp, gid );
     if( ret != 0 )
         return( ret );
+
+    /* hardware ecp short weierstrass background prepare */
+#if defined(MBEDTLS_ECC_SW_BACKGROUND_ALT)
+    if ((gid == MBEDTLS_ECP_DP_BP256R1) || (gid == MBEDTLS_ECP_DP_BP384R1) || (gid == MBEDTLS_ECP_DP_BP512R1) ||
+       (gid == MBEDTLS_ECP_DP_SECP192K1) || (gid == MBEDTLS_ECP_DP_SECP224K1) || (gid == MBEDTLS_ECP_DP_SECP256K1)) {
+        ecp_sw_secg_brainpool_curve_init(&ctx->grp.P, &ctx->grp.A, &ctx->grp.B);
+    } else {
+        ecp_sw_nist_curve_init(&ctx->grp.P, &ctx->grp.B);
+    }
+#endif
 
    return( mbedtls_ecp_gen_keypair( &ctx->grp, &ctx->d,
                                     &ctx->Q, f_rng, p_rng ) );

@@ -1,7 +1,9 @@
 /*
  *  RFC 1321 compliant MD5 implementation
  *
- *  Copyright The Mbed TLS Contributors
+ *  Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+ *  Copyright (c) 2019 Nuclei Limited. All rights reserved.
+ *
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -212,6 +214,7 @@ int mbedtls_internal_md5_process( mbedtls_md5_context *ctx,
 /*
  * MD5 process buffer
  */
+#if !defined(MBEDTLS_MD5_UPDATE_ALT)
 int mbedtls_md5_update( mbedtls_md5_context *ctx,
                             const unsigned char *input,
                             size_t ilen )
@@ -259,10 +262,12 @@ int mbedtls_md5_update( mbedtls_md5_context *ctx,
 
     return( 0 );
 }
+#endif
 
 /*
  * MD5 final digest
  */
+#if !defined(MBEDTLS_MD5_FINISH_ALT)
 int mbedtls_md5_finish( mbedtls_md5_context *ctx,
                             unsigned char output[16] )
 {
@@ -316,6 +321,7 @@ int mbedtls_md5_finish( mbedtls_md5_context *ctx,
 
     return( 0 );
 }
+#endif
 
 #endif /* !MBEDTLS_MD5_ALT */
 
@@ -350,7 +356,7 @@ exit:
 /*
  * RFC 1321 test vectors
  */
-static const unsigned char md5_test_buf[7][81] =
+static const unsigned char md5_test_buf[7][80] =
 {
     { "" },
     { "a" },

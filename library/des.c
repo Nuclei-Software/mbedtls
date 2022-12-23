@@ -1,7 +1,9 @@
 /*
  *  FIPS-46-3 compliant Triple-DES implementation
  *
- *  Copyright The Mbed TLS Contributors
+ *  Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+ *  Copyright (c) 2019 Nuclei Limited. All rights reserved.
+ *
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -274,6 +276,9 @@ static const uint32_t RHs[16] =
         uint32_t t = (a); (a) = (b); (b) = t; t = 0;    \
     } while( 0 )
 
+int mbedtls_des_crypt_ecb_mode( mbedtls_des_context *ctx, int mode, const unsigned char input[8], unsigned char output[8] );
+int mbedtls_des3_crypt_ecb_mode( mbedtls_des3_context *ctx, int mode, const unsigned char input[8], unsigned char output[8] );
+
 void mbedtls_des_init( mbedtls_des_context *ctx )
 {
     memset( ctx, 0, sizeof( mbedtls_des_context ) );
@@ -462,16 +467,19 @@ void mbedtls_des_setkey( uint32_t SK[32], const unsigned char key[MBEDTLS_DES_KE
 /*
  * DES key schedule (56-bit, encryption)
  */
+#if !defined(MBEDTLS_DES_SET_ONEKEY_EN_ALT)
 int mbedtls_des_setkey_enc( mbedtls_des_context *ctx, const unsigned char key[MBEDTLS_DES_KEY_SIZE] )
 {
     mbedtls_des_setkey( ctx->sk, key );
 
     return( 0 );
 }
+#endif
 
 /*
  * DES key schedule (56-bit, decryption)
  */
+#if !defined(MBEDTLS_DES_SET_ONEKEY_DE_ALT)
 int mbedtls_des_setkey_dec( mbedtls_des_context *ctx, const unsigned char key[MBEDTLS_DES_KEY_SIZE] )
 {
     int i;
@@ -486,6 +494,7 @@ int mbedtls_des_setkey_dec( mbedtls_des_context *ctx, const unsigned char key[MB
 
     return( 0 );
 }
+#endif
 
 static void des3_set2key( uint32_t esk[96],
                           uint32_t dsk[96],
@@ -515,6 +524,7 @@ static void des3_set2key( uint32_t esk[96],
 /*
  * Triple-DES key schedule (112-bit, encryption)
  */
+#if !defined(MBEDTLS_DES_SET_DOUBLEKEY_EN_ALT)
 int mbedtls_des3_set2key_enc( mbedtls_des3_context *ctx,
                       const unsigned char key[MBEDTLS_DES_KEY_SIZE * 2] )
 {
@@ -525,10 +535,12 @@ int mbedtls_des3_set2key_enc( mbedtls_des3_context *ctx,
 
     return( 0 );
 }
+#endif
 
 /*
  * Triple-DES key schedule (112-bit, decryption)
  */
+#if !defined(MBEDTLS_DES_SET_DOUBLEKEY_DE_ALT)
 int mbedtls_des3_set2key_dec( mbedtls_des3_context *ctx,
                       const unsigned char key[MBEDTLS_DES_KEY_SIZE * 2] )
 {
@@ -539,6 +551,7 @@ int mbedtls_des3_set2key_dec( mbedtls_des3_context *ctx,
 
     return( 0 );
 }
+#endif
 
 static void des3_set3key( uint32_t esk[96],
                           uint32_t dsk[96],
@@ -566,6 +579,7 @@ static void des3_set3key( uint32_t esk[96],
 /*
  * Triple-DES key schedule (168-bit, encryption)
  */
+#if !defined(MBEDTLS_DES_SET_TRIPLEKEY_EN_ALT)
 int mbedtls_des3_set3key_enc( mbedtls_des3_context *ctx,
                       const unsigned char key[MBEDTLS_DES_KEY_SIZE * 3] )
 {
@@ -576,10 +590,12 @@ int mbedtls_des3_set3key_enc( mbedtls_des3_context *ctx,
 
     return( 0 );
 }
+#endif
 
 /*
  * Triple-DES key schedule (168-bit, decryption)
  */
+#if !defined(MBEDTLS_DES_SET_TRIPLEKEY_DE_ALT)
 int mbedtls_des3_set3key_dec( mbedtls_des3_context *ctx,
                       const unsigned char key[MBEDTLS_DES_KEY_SIZE * 3] )
 {
@@ -590,6 +606,7 @@ int mbedtls_des3_set3key_dec( mbedtls_des3_context *ctx,
 
     return( 0 );
 }
+#endif
 
 /*
  * DES-ECB block encryption/decryption
@@ -624,7 +641,26 @@ int mbedtls_des_crypt_ecb( mbedtls_des_context *ctx,
 }
 #endif /* !MBEDTLS_DES_CRYPT_ECB_ALT */
 
-#if defined(MBEDTLS_CIPHER_MODE_CBC)
+#if !defined(MBEDTLS_DES_CRYPT_ECB_MODE_ALT)
+int mbedtls_des_crypt_ecb_mode( mbedtls_des_context *ctx,
+                                 int mode,
+                                 const unsigned char input[8],
+                                 unsigned char output[8] )
+{
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+
+    ret = mbedtls_des_crypt_ecb( ctx, input, output );
+    if( ret != 0 )
+        goto exit;
+
+    ret = 0;
+
+exit:
+    return( ret );
+}
+#endif
+
+#if defined(MBEDTLS_CIPHER_MODE_CBC) && !defined(MBEDTLS_DES_CRYPT_CBC_MODE_ALT)
 /*
  * DES-CBC buffer encryption/decryption
  */
@@ -730,7 +766,26 @@ int mbedtls_des3_crypt_ecb( mbedtls_des3_context *ctx,
 }
 #endif /* !MBEDTLS_DES3_CRYPT_ECB_ALT */
 
-#if defined(MBEDTLS_CIPHER_MODE_CBC)
+#if !defined(MBEDTLS_DES3_CRYPT_ECB_MODE_ALT)
+int mbedtls_des3_crypt_ecb_mode( mbedtls_des3_context *ctx,
+                                 int mode,
+                                 const unsigned char input[8],
+                                 unsigned char output[8] )
+{
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+
+    ret = mbedtls_des3_crypt_ecb( ctx, input, output );
+    if( ret != 0 )
+        goto exit;
+
+    ret = 0;
+
+exit:
+    return( ret );
+}
+#endif
+
+#if defined(MBEDTLS_CIPHER_MODE_CBC)  && !defined(MBEDTLS_DES3_CRYPT_CBC_MODE_ALT)
 /*
  * 3DES-CBC buffer encryption/decryption
  */
@@ -912,9 +967,9 @@ int mbedtls_des_self_test( int verbose )
         for( j = 0; j < 100; j++ )
         {
             if( u == 0 )
-                ret = mbedtls_des_crypt_ecb( &ctx, buf, buf );
+                ret = mbedtls_des_crypt_ecb_mode( &ctx, v, buf, buf );
             else
-                ret = mbedtls_des3_crypt_ecb( &ctx3, buf, buf );
+                ret = mbedtls_des3_crypt_ecb_mode( &ctx3, v, buf, buf );
             if( ret != 0 )
                 goto exit;
         }

@@ -1,0 +1,59 @@
+## Package Base Information
+name: app-mbedtls_selftest
+owner: nuclei
+version: 0.1.0
+description: mbedtls selftest using nuclei crypto engine
+type: app
+keywords:
+  - baremetal
+  - mbedtls
+  - examples
+category: mbedtls baremetal application
+license: Apache-2.0
+homepage: https://github.com/Nuclei-Software/mbedtls/examples/selftest
+
+## Package Dependency
+dependencies:
+  - name: sdk-nuclei_sdk
+    version:
+  - name: mwp-libmbedtls
+
+## Package Configurations
+configuration:
+  app_commonflags:
+    value: -O2
+    type: text
+    description: Application Compile Flags
+
+## Set Configuration for other packages
+setconfig:
+
+
+## Source Code Management
+codemanage:
+  copyfiles:
+    - path: ["*.c", "*.h"]
+  incdirs:
+    - path: ["./"]
+  libdirs:
+    - path: ["./"]
+  ldlibs:
+    - libs:
+
+## Build Configuration
+buildconfig:
+  - type: gcc
+    common_flags: # flags need to be combined together across all packages
+      - flags: ${app_commonflags}
+    ldflags:
+    cflags:
+    asmflags:
+    cxxflags:
+    common_defines:
+      - defines: MBEDTLS_CONFIG_FILE=\"mbedtls_config.h\"
+    prebuild_steps: # could be override by app/bsp type
+      command:
+      description:
+    postbuild_steps: # could be override by app/bsp type
+      command:
+      description:

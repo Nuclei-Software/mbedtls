@@ -1,7 +1,9 @@
 /*
  *  NIST SP800-38D compliant GCM implementation
  *
- *  Copyright The Mbed TLS Contributors
+ *  Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+ *  Copyright (c) 2019 Nuclei Limited. All rights reserved.
+ *
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -120,6 +122,7 @@ static int gcm_gen_table( mbedtls_gcm_context *ctx )
     return( 0 );
 }
 
+#if !defined(MBEDTLS_AES_GCM_SETKEY_ALT)
 int mbedtls_gcm_setkey( mbedtls_gcm_context *ctx,
                         mbedtls_cipher_id_t cipher,
                         const unsigned char *key,
@@ -155,6 +158,7 @@ int mbedtls_gcm_setkey( mbedtls_gcm_context *ctx,
 
     return( 0 );
 }
+#endif
 
 /*
  * Shoup's method for multiplication use this table with
@@ -536,6 +540,7 @@ int mbedtls_gcm_finish( mbedtls_gcm_context *ctx,
     return( 0 );
 }
 
+#if !defined(MBEDTLS_AES_GCM_CRYPT_ALT)
 int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
                        int mode,
                        size_t length,
@@ -566,6 +571,7 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
 
     return( 0 );
 }
+#endif
 
 int mbedtls_gcm_auth_decrypt( mbedtls_gcm_context *ctx,
                       size_t length,
@@ -620,6 +626,7 @@ void mbedtls_gcm_free( mbedtls_gcm_context *ctx )
  * http://csrc.nist.gov/groups/STM/cavp/documents/mac/gcmtestvectors.zip
  */
 #define MAX_TESTS   6
+#define TESTS_NUM   4
 
 static const int key_index_test_data[MAX_TESTS] =
     { 0, 0, 1, 1, 1, 1 };
@@ -854,7 +861,7 @@ int mbedtls_gcm_self_test( int verbose )
     {
         int key_len = 128 + 64 * j;
 
-        for( i = 0; i < MAX_TESTS; i++ )
+        for( i = 0; i < TESTS_NUM; i++ )
         {
             mbedtls_gcm_init( &ctx );
 
@@ -949,6 +956,7 @@ int mbedtls_gcm_self_test( int verbose )
             if( verbose != 0 )
                 mbedtls_printf( "passed\n" );
 
+#if defined(MBEDTLS_GCM_UPDATE)
             mbedtls_gcm_init( &ctx );
 
             if( verbose != 0 )
@@ -1094,6 +1102,7 @@ int mbedtls_gcm_self_test( int verbose )
 
             if( verbose != 0 )
                 mbedtls_printf( "passed\n" );
+#endif /* MBEDTLS_GCM_UPDATE */
         }
     }
 

@@ -1,7 +1,9 @@
 /*
  *  Elliptic curve Diffie-Hellman
  *
- *  Copyright The Mbed TLS Contributors
+ *  Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+ *  Copyright (c) 2019 Nuclei Limited. All rights reserved.
+ *
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -36,6 +38,14 @@
 
 #if defined(MBEDTLS_ECDH_LEGACY_CONTEXT)
 typedef mbedtls_ecdh_context mbedtls_ecdh_context_mbed;
+#endif
+
+#if defined(MBEDTLS_ECC_SW_BACKGROUND_ALT)
+extern int ecp_sw_nist_curve_init(const mbedtls_mpi *N, const mbedtls_mpi *B);
+extern int ecp_sw_secg_brainpool_curve_init(const mbedtls_mpi *N, const mbedtls_mpi *A, const mbedtls_mpi *B);
+#endif
+#if defined(MBEDTLS_ECC_MM_BACKGROUND_ALT)
+extern int ecp_montgomery_curve_init(const mbedtls_mpi *N, const mbedtls_mpi *D);
 #endif
 
 static mbedtls_ecp_group_id mbedtls_ecdh_grp_id(
@@ -187,6 +197,20 @@ static int ecdh_setup_internal( mbedtls_ecdh_context_mbed *ctx,
     {
         return( MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE );
     }
+
+#if defined(MBEDTLS_ECC_SW_BACKGROUND_ALT) || defined(MBEDTLS_ECC_MM_BACKGROUND_ALT)
+    /* hardware ecp short weierstrass background prepare */
+    if ((grp_id == MBEDTLS_ECP_DP_BP256R1) || (grp_id == MBEDTLS_ECP_DP_BP384R1) || (grp_id == MBEDTLS_ECP_DP_BP512R1) ||
+       (grp_id == MBEDTLS_ECP_DP_SECP192K1) || (grp_id == MBEDTLS_ECP_DP_SECP224K1) || (grp_id == MBEDTLS_ECP_DP_SECP256K1)) {
+        ecp_sw_secg_brainpool_curve_init(&ctx->grp.P, &ctx->grp.A, &ctx->grp.B);
+    } else if ((grp_id == MBEDTLS_ECP_DP_SECP192R1) || (grp_id == MBEDTLS_ECP_DP_SECP224R1) || (grp_id == MBEDTLS_ECP_DP_SECP256R1) ||
+       (grp_id == MBEDTLS_ECP_DP_SECP384R1) || (grp_id == MBEDTLS_ECP_DP_SECP521R1)) {
+        ecp_sw_nist_curve_init(&ctx->grp.P, &ctx->grp.B);
+    }
+    else if ((grp_id == MBEDTLS_ECP_DP_CURVE25519) || (grp_id == MBEDTLS_ECP_DP_CURVE448)) {
+        ecp_montgomery_curve_init(&ctx->grp.P, &ctx->grp.A);
+    }
+#endif
 
     return( 0 );
 }

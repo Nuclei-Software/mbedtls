@@ -1,7 +1,9 @@
 /*
  *  FIPS-197 compliant AES implementation
  *
- *  Copyright The Mbed TLS Contributors
+ *  Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+ *  Copyright (c) 2019 Nuclei Limited. All rights reserved.
+ *
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -967,7 +969,7 @@ int mbedtls_aes_crypt_ecb( mbedtls_aes_context *ctx,
         return( mbedtls_internal_aes_decrypt( ctx, input, output ) );
 }
 
-#if defined(MBEDTLS_CIPHER_MODE_CBC)
+#if defined(MBEDTLS_CIPHER_MODE_CBC) && !defined(MBEDTLS_AES_CBC_ALT)
 /*
  * AES-CBC buffer encryption/decryption
  */
@@ -1321,7 +1323,7 @@ exit:
 }
 #endif /* MBEDTLS_CIPHER_MODE_OFB */
 
-#if defined(MBEDTLS_CIPHER_MODE_CTR)
+#if defined(MBEDTLS_CIPHER_MODE_CTR) && !defined(MBEDTLS_AES_CTR_ALT)
 /*
  * AES-CTR buffer encryption/decryption
  */
@@ -1609,7 +1611,7 @@ static const unsigned char aes_test_ctr_ct[3][48] =
 };
 
 static const int aes_test_ctr_len[3] =
-    { 16, 32, 36 };
+    { 16, 32, 48 };
 #endif /* MBEDTLS_CIPHER_MODE_CTR */
 
 #if defined(MBEDTLS_CIPHER_MODE_XTS)
@@ -2013,10 +2015,18 @@ int mbedtls_aes_self_test( int verbose )
         if( ret != 0 )
             goto exit;
 
-        if( memcmp( buf, aes_tests, len ) != 0 )
-        {
-            ret = 1;
-            goto exit;
+        if (i < 4) {
+            if( memcmp( buf, aes_tests, len ) != 0 )
+            {
+                ret = 1;
+                goto exit;
+            }
+        } else {
+            if( memcmp( buf, aes_tests, 36 ) != 0 )
+            {
+                ret = 1;
+                goto exit;
+            }
         }
 
         if( verbose != 0 )
@@ -2028,6 +2038,7 @@ int mbedtls_aes_self_test( int verbose )
 #endif /* MBEDTLS_CIPHER_MODE_CTR */
 
 #if defined(MBEDTLS_CIPHER_MODE_XTS)
+#if defined(MBEDTLS_XTS_EXEC)
     {
     static const int num_tests =
         sizeof(aes_test_xts_key) / sizeof(*aes_test_xts_key);
@@ -2092,6 +2103,7 @@ int mbedtls_aes_self_test( int verbose )
 
     mbedtls_aes_xts_free( &ctx_xts );
     }
+#endif
 #endif /* MBEDTLS_CIPHER_MODE_XTS */
 
     ret = 0;

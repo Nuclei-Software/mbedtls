@@ -1,7 +1,9 @@
 /*
  *  Elliptic curves over GF(p): generic functions
  *
- *  Copyright The Mbed TLS Contributors
+ *  Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+ *  Copyright (c) 2019 Nuclei Limited. All rights reserved.
+ *
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -319,6 +321,29 @@ int mbedtls_ecp_check_budget( const mbedtls_ecp_group *grp,
 #define ECP_RS_LEAVE( sub )     (void) rs_ctx;
 
 #endif /* MBEDTLS_ECP_RESTARTABLE */
+
+#if defined(MBEDTLS_ECC_SW_BACKGROUND_ALT)
+extern int ecp_sw_nist_curve_init(const mbedtls_mpi *N, const mbedtls_mpi *B);
+#endif
+#if defined(MBEDTLS_ECC_MM_BACKGROUND_ALT)
+extern int ecp_montgomery_curve_init(const mbedtls_mpi *N, const mbedtls_mpi *D);
+#endif
+#if defined(MBEDTLS_MUL_SHORT_WEIERSTRASS_ALT)
+extern int ecp_mul_comb(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
+                 const mbedtls_mpi *m, const mbedtls_ecp_point *P,
+                 int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
+                 mbedtls_ecp_restart_ctx *rs_ctx);
+#endif
+#if defined(MBEDTLS_ADD_SHORT_WEIERSTRASS_ALT)
+extern int ecp_add_mixed( const mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
+                   const mbedtls_ecp_point *P, const mbedtls_ecp_point *Q,
+                   mbedtls_mpi tmp[4] );
+#endif
+#if defined(MBEDTLS_MUL_MONTGOMERY_ALT)
+extern int ecp_mul_mxz(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
+                const mbedtls_mpi *m, const mbedtls_ecp_point *P,
+                int (*f_rng)(void *, unsigned char *, size_t), void *p_rng);
+#endif
 
 static void mpi_init_many( mbedtls_mpi *arr, size_t size )
 {
@@ -1474,6 +1499,7 @@ cleanup:
  *
  * Cost: 1A := 8M + 3S
  */
+#if !defined(MBEDTLS_ADD_SHORT_WEIERSTRASS_ALT)
 static int ecp_add_mixed( const mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                           const mbedtls_ecp_point *P, const mbedtls_ecp_point *Q,
                           mbedtls_mpi tmp[4] )
@@ -1563,6 +1589,7 @@ cleanup:
     return( ret );
 #endif /* !defined(MBEDTLS_ECP_NO_FALLBACK) || !defined(MBEDTLS_ECP_ADD_MIXED_ALT) */
 }
+#endif
 
 /*
  * Randomize jacobian coordinates:
@@ -2166,6 +2193,7 @@ static unsigned char ecp_pick_window_size( const mbedtls_ecp_group *grp,
  *
  * See comments on ecp_comb_recode_core() regarding the computation strategy.
  */
+#if !defined(MBEDTLS_MUL_SHORT_WEIERSTRASS_ALT)
 static int ecp_mul_comb( mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                          const mbedtls_mpi *m, const mbedtls_ecp_point *P,
                          int (*f_rng)(void *, unsigned char *, size_t),
@@ -2288,6 +2316,7 @@ cleanup:
 
     return( ret );
 }
+#endif
 
 #endif /* MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED */
 
@@ -2422,6 +2451,7 @@ cleanup:
  * Multiplication with Montgomery ladder in x/z coordinates,
  * for curves in Montgomery form
  */
+#if !defined(MBEDTLS_MUL_MONTGOMERY_ALT)
 static int ecp_mul_mxz( mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                         const mbedtls_mpi *m, const mbedtls_ecp_point *P,
                         int (*f_rng)(void *, unsigned char *, size_t),
@@ -2494,6 +2524,7 @@ cleanup:
     mpi_free_many( tmp, sizeof( tmp ) / sizeof( mbedtls_mpi ) );
     return( ret );
 }
+#endif
 
 #endif /* MBEDTLS_ECP_MONTGOMERY_ENABLED */
 
@@ -3422,6 +3453,11 @@ int mbedtls_ecp_self_test( int verbose )
     MBEDTLS_MPI_CHK( mbedtls_ecp_group_load( &grp, mbedtls_ecp_curve_list()->grp_id ) );
 #endif
 
+    /* hardware ecp short weierstrass background prepare */
+#if defined(MBEDTLS_ECC_SW_BACKGROUND_ALT)
+    MBEDTLS_MPI_CHK( ecp_sw_nist_curve_init(&grp.P, &grp.B) );
+#endif
+
     if( verbose != 0 )
         mbedtls_printf( "  ECP SW test #1 (constant op_count, base point G): " );
     /* Do a dummy multiplication first to trigger precomputation */
@@ -3458,6 +3494,12 @@ int mbedtls_ecp_self_test( int verbose )
 #else
 #error "MBEDTLS_ECP_MONTGOMERY_ENABLED is defined, but no curve is supported for self-test"
 #endif
+
+    /* hardware ecp montgomery background prepare */
+#if defined(MBEDTLS_ECC_MM_BACKGROUND_ALT)
+    MBEDTLS_MPI_CHK( ecp_montgomery_curve_init(&grp.P, &grp.A) );
+#endif
+
     ret = self_test_point( verbose,
                            &grp, &R, &m, &grp.G,
                            m_exponents,

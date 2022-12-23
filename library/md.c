@@ -5,7 +5,9 @@
  *
  * \author Adriaan de Jong <dejong@fox-it.com>
  *
- *  Copyright The Mbed TLS Contributors
+ *  Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+ *  Copyright (c) 2019 Nuclei Limited. All rights reserved.
+ *
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -463,6 +465,7 @@ int mbedtls_md_starts( mbedtls_md_context_t *ctx )
     }
 }
 
+#if !defined(MBEDTLS_MD_UPDATE_ALT)
 int mbedtls_md_update( mbedtls_md_context_t *ctx, const unsigned char *input, size_t ilen )
 {
     if( ctx == NULL || ctx->md_info == NULL )
@@ -502,6 +505,7 @@ int mbedtls_md_update( mbedtls_md_context_t *ctx, const unsigned char *input, si
             return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
     }
 }
+#endif
 
 int mbedtls_md_finish( mbedtls_md_context_t *ctx, unsigned char *output )
 {
@@ -628,6 +632,7 @@ cleanup:
 }
 #endif /* MBEDTLS_FS_IO */
 
+#if !defined(MBEDTLS_HMAC_START_ALT)
 int mbedtls_md_hmac_starts( mbedtls_md_context_t *ctx, const unsigned char *key, size_t keylen )
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
@@ -674,7 +679,9 @@ cleanup:
 
     return( ret );
 }
+#endif
 
+#if !defined(MBEDTLS_HMAC_UPDATE_ALT)
 int mbedtls_md_hmac_update( mbedtls_md_context_t *ctx, const unsigned char *input, size_t ilen )
 {
     if( ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL )
@@ -682,7 +689,9 @@ int mbedtls_md_hmac_update( mbedtls_md_context_t *ctx, const unsigned char *inpu
 
     return( mbedtls_md_update( ctx, input, ilen ) );
 }
+#endif
 
+#if !defined(MBEDTLS_HMAC_FINISH_ALT)
 int mbedtls_md_hmac_finish( mbedtls_md_context_t *ctx, unsigned char *output )
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
@@ -706,7 +715,9 @@ int mbedtls_md_hmac_finish( mbedtls_md_context_t *ctx, unsigned char *output )
         return( ret );
     return( mbedtls_md_finish( ctx, output ) );
 }
+#endif
 
+#if !defined(MBEDTLS_HMAC_RESET_ALT)
 int mbedtls_md_hmac_reset( mbedtls_md_context_t *ctx )
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
@@ -721,6 +732,7 @@ int mbedtls_md_hmac_reset( mbedtls_md_context_t *ctx )
         return( ret );
     return( mbedtls_md_update( ctx, ipad, ctx->md_info->block_size ) );
 }
+#endif
 
 int mbedtls_md_hmac( const mbedtls_md_info_t *md_info,
                      const unsigned char *key, size_t keylen,

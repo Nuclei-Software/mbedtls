@@ -1,7 +1,9 @@
 /*
  *  NIST SP800-38C compliant CCM implementation
  *
- *  Copyright The Mbed TLS Contributors
+ *  Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+ *  Copyright (c) 2019 Nuclei Limited. All rights reserved.
+ *
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -56,6 +58,7 @@ void mbedtls_ccm_init( mbedtls_ccm_context *ctx )
     memset( ctx, 0, sizeof( mbedtls_ccm_context ) );
 }
 
+#if !defined(MBEDTLS_AES_CCM_SETKEY_ALT)
 int mbedtls_ccm_setkey( mbedtls_ccm_context *ctx,
                         mbedtls_cipher_id_t cipher,
                         const unsigned char *key,
@@ -85,6 +88,7 @@ int mbedtls_ccm_setkey( mbedtls_ccm_context *ctx,
 
     return( 0 );
 }
+#endif
 
 /*
  * Free context
@@ -526,6 +530,7 @@ int mbedtls_ccm_star_encrypt_and_tag( mbedtls_ccm_context *ctx, size_t length,
                             add, add_len, input, output, tag, tag_len ) );
 }
 
+#if !defined(MBEDTLS_AES_CCM_ENCRYPT_ALT)
 int mbedtls_ccm_encrypt_and_tag( mbedtls_ccm_context *ctx, size_t length,
                          const unsigned char *iv, size_t iv_len,
                          const unsigned char *add, size_t add_len,
@@ -535,6 +540,7 @@ int mbedtls_ccm_encrypt_and_tag( mbedtls_ccm_context *ctx, size_t length,
     return( ccm_auth_crypt( ctx, MBEDTLS_CCM_ENCRYPT, length, iv, iv_len,
                             add, add_len, input, output, tag, tag_len ) );
 }
+#endif
 
 /*
  * Authenticated decryption
@@ -592,6 +598,7 @@ int mbedtls_ccm_star_auth_decrypt( mbedtls_ccm_context *ctx, size_t length,
                              input, output, tag, tag_len );
 }
 
+#if !defined(MBEDTLS_AES_CCM_DECRYPT_ALT)
 int mbedtls_ccm_auth_decrypt( mbedtls_ccm_context *ctx, size_t length,
                       const unsigned char *iv, size_t iv_len,
                       const unsigned char *add, size_t add_len,
@@ -602,6 +609,8 @@ int mbedtls_ccm_auth_decrypt( mbedtls_ccm_context *ctx, size_t length,
                              iv, iv_len, add, add_len,
                              input, output, tag, tag_len );
 }
+#endif
+
 #endif /* !MBEDTLS_CCM_ALT */
 
 #if defined(MBEDTLS_SELF_TEST) && defined(MBEDTLS_AES_C)

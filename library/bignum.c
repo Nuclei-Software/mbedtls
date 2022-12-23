@@ -1,7 +1,9 @@
 /*
  *  Multi-precision integer library
  *
- *  Copyright The Mbed TLS Contributors
+ *  Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+ *  Copyright (c) 2019 Nuclei Limited. All rights reserved.
+ *
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -1031,18 +1033,22 @@ cleanup:
 /*
  * Signed addition: X = A + B
  */
+#if !defined(MBEDTLS_BIGNUM_ADD_MPI_MPI_ALT)
 int mbedtls_mpi_add_mpi( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *B )
 {
     return( add_sub_mpi( X, A, B, 1 ) );
 }
+#endif
 
 /*
  * Signed subtraction: X = A - B
  */
+#if !defined(MBEDTLS_BIGNUM_SUB_MPI_MPI_ALT)
 int mbedtls_mpi_sub_mpi( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *B )
 {
     return( add_sub_mpi( X, A, B, -1 ) );
 }
+#endif
 
 /*
  * Signed addition: X = A + b
@@ -1083,6 +1089,7 @@ int mbedtls_mpi_sub_int( mbedtls_mpi *X, const mbedtls_mpi *A, mbedtls_mpi_sint 
 /*
  * Baseline multiplication: X = A * B  (HAC 14.12)
  */
+#if !defined(MBEDTLS_BIGNUM_MUL_MPI_MPI_ALT)
 int mbedtls_mpi_mul_mpi( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *B )
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
@@ -1137,6 +1144,7 @@ cleanup:
 
     return( ret );
 }
+#endif
 
 /*
  * Baseline multiplication: X = A * b
@@ -1421,6 +1429,7 @@ int mbedtls_mpi_div_int( mbedtls_mpi *Q, mbedtls_mpi *R,
 /*
  * Modulo: R = A mod B
  */
+#if !defined(MBEDTLS_BIGNUM_MOD_MPI_MPI_ALT)
 int mbedtls_mpi_mod_mpi( mbedtls_mpi *R, const mbedtls_mpi *A, const mbedtls_mpi *B )
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
@@ -1443,6 +1452,7 @@ cleanup:
 
     return( ret );
 }
+#endif
 
 /*
  * Modulo: r = A mod b
@@ -1585,6 +1595,7 @@ cleanup:
 /*
  * Sliding-window exponentiation: X = A^E mod N  (HAC 14.85)
  */
+#if !defined(MBEDTLS_BIGNUM_MEXP_MPI_MPI_ALT)
 int mbedtls_mpi_exp_mod( mbedtls_mpi *X, const mbedtls_mpi *A,
                          const mbedtls_mpi *E, const mbedtls_mpi *N,
                          mbedtls_mpi *prec_RR )
@@ -1884,6 +1895,7 @@ cleanup:
 
     return( ret );
 }
+#endif
 
 /*
  * Greatest common divisor: G = gcd(A, B)  (HAC 14.54)
@@ -2106,6 +2118,7 @@ cleanup:
 /*
  * Modular inverse: X = A^-1 mod N  (HAC 14.61 / 14.64)
  */
+#if !defined(MBEDTLS_BIGNUM_INVMOD_MPI_MPI_ALT)
 int mbedtls_mpi_inv_mod( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *N )
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
@@ -2200,6 +2213,7 @@ cleanup:
 
     return( ret );
 }
+#endif
 
 #if defined(MBEDTLS_GENPRIME)
 

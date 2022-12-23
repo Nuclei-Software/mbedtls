@@ -1,7 +1,9 @@
 /*
  *  FIPS-180-2 compliant SHA-384/512 implementation
  *
- *  Copyright The Mbed TLS Contributors
+ *  Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+ *  Copyright (c) 2019 Nuclei Limited. All rights reserved.
+ *
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -706,6 +708,7 @@ int mbedtls_internal_sha512_process( mbedtls_sha512_context *ctx,
 /*
  * SHA-512 process buffer
  */
+#if !defined(MBEDTLS_SHA512_UPDATE_ALT)
 int mbedtls_sha512_update( mbedtls_sha512_context *ctx,
                                const unsigned char *input,
                                size_t ilen )
@@ -753,10 +756,12 @@ int mbedtls_sha512_update( mbedtls_sha512_context *ctx,
 
     return( 0 );
 }
+#endif
 
 /*
  * SHA-512 final digest
  */
+#if !defined(MBEDTLS_SHA512_FINISH_ALT)
 int mbedtls_sha512_finish( mbedtls_sha512_context *ctx,
                                unsigned char *output )
 {
@@ -822,6 +827,7 @@ int mbedtls_sha512_finish( mbedtls_sha512_context *ctx,
 
     return( 0 );
 }
+#endif
 
 #endif /* !MBEDTLS_SHA512_ALT */
 

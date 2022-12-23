@@ -1,7 +1,9 @@
 /*
  *  The RSA public-key cryptosystem
  *
- *  Copyright The Mbed TLS Contributors
+ *  Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+ *  Copyright (c) 2019 Nuclei Limited. All rights reserved.
+ *
  *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -39,6 +41,7 @@
 
 #if defined(MBEDTLS_RSA_C)
 
+#include "acryp_alt.h"
 #include "mbedtls/rsa.h"
 #include "rsa_alt_helpers.h"
 #include "mbedtls/oid.h"
@@ -66,6 +69,23 @@
 #include "mbedtls/platform.h"
 
 #if !defined(MBEDTLS_RSA_ALT)
+
+#if defined(MBEDTLS_RSA_BACKGROUND_ALT)
+extern int mpi_mont_config(const mbedtls_mpi *N, const mbedtls_mpi *P, const mbedtls_mpi *Q);
+#endif
+#if defined(MBEDTLS_BIGNUM_MEXP_WITHOUT_RRMODN_ALT)
+extern int mbedtls_mpi_exp_mod_without_RRmodN( mbedtls_mpi *X, const mbedtls_mpi *A,
+                                               const mbedtls_mpi *E, const mbedtls_mpi *N,
+                                               uint8_t modulus );
+#endif
+#if defined(MBEDTLS_BIGNUM_MONTMUL_ALT)
+extern int mpi_montmul_alt( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *B, const mbedtls_mpi *N);
+extern int mpi_montmulself_alt( mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *N);
+#endif
+#if defined(RSA_8192)
+extern int mbedtls_rsa_get_inv( mbedtls_rsa_context *ctx, mbedtls_mpi *inv_a, const mbedtls_mpi *a);
+#endif
+
 
 int mbedtls_rsa_import( mbedtls_rsa_context *ctx,
                         const mbedtls_mpi *N,
@@ -736,7 +756,11 @@ int mbedtls_rsa_public( mbedtls_rsa_context *ctx,
     }
 
     olen = ctx->len;
+#if defined(MBEDTLS_BIGNUM_MEXP_WITHOUT_RRMODN_ALT)
+    MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod_without_RRmodN(&T, &T, &ctx->E, &ctx->N, MONTMULT_N_MODULUS) );
+#else
     MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &T, &T, &ctx->E, &ctx->N, &ctx->RN ) );
+#endif
     MBEDTLS_MPI_CHK( mbedtls_mpi_write_binary( &T, output, olen ) );
 
 cleanup:
@@ -770,11 +794,15 @@ static int rsa_prepare_blinding( mbedtls_rsa_context *ctx,
     if( ctx->Vf.p != NULL )
     {
         /* We already have blinding values, just update them by squaring */
+#if defined(MBEDTLS_BIGNUM_MONTMUL_ALT)
+        MBEDTLS_MPI_CHK( mpi_montmulself_alt(&ctx->Vi, &ctx->Vi, &ctx->N) );
+        MBEDTLS_MPI_CHK( mpi_montmulself_alt(&ctx->Vf, &ctx->Vf, &ctx->N) );
+#else
         MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( &ctx->Vi, &ctx->Vi, &ctx->Vi ) );
         MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( &ctx->Vi, &ctx->Vi, &ctx->N ) );
         MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( &ctx->Vf, &ctx->Vf, &ctx->Vf ) );
         MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( &ctx->Vf, &ctx->Vf, &ctx->N ) );
-
+#endif
         goto cleanup;
     }
 
@@ -790,26 +818,42 @@ static int rsa_prepare_blinding( mbedtls_rsa_context *ctx,
 
         /* Compute Vf^-1 as R * (R Vf)^-1 to avoid leaks from inv_mod. */
         MBEDTLS_MPI_CHK( mbedtls_mpi_fill_random( &R, ctx->len - 1, f_rng, p_rng ) );
+#if defined(MBEDTLS_BIGNUM_MONTMUL_ALT)
+        MBEDTLS_MPI_CHK( mpi_montmul_alt(&ctx->Vi, &ctx->Vf, &R, &ctx->N) );
+#else
         MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( &ctx->Vi, &ctx->Vf, &R ) );
         MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( &ctx->Vi, &ctx->Vi, &ctx->N ) );
+#endif
 
         /* At this point, Vi is invertible mod N if and only if both Vf and R
          * are invertible mod N. If one of them isn't, we don't need to know
          * which one, we just loop and choose new values for both of them.
          * (Each iteration succeeds with overwhelming probability.) */
+#if !defined(RSA_8192)
         ret = mbedtls_mpi_inv_mod( &ctx->Vi, &ctx->Vi, &ctx->N );
+#else
+        ret = mbedtls_rsa_get_inv( ctx, &ctx->Vi, &ctx->Vi );
+#endif
         if( ret != 0 && ret != MBEDTLS_ERR_MPI_NOT_ACCEPTABLE )
             goto cleanup;
 
     } while( ret == MBEDTLS_ERR_MPI_NOT_ACCEPTABLE );
 
     /* Finish the computation of Vf^-1 = R * (R Vf)^-1 */
+#if defined(MBEDTLS_BIGNUM_MONTMUL_ALT)
+    MBEDTLS_MPI_CHK( mpi_montmul_alt(&ctx->Vi, &ctx->Vi, &R, &ctx->N) );
+#else
     MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( &ctx->Vi, &ctx->Vi, &R ) );
     MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( &ctx->Vi, &ctx->Vi, &ctx->N ) );
+#endif
 
     /* Blinding value: Vi = Vf^(-e) mod N
      * (Vi already contains Vf^-1 at this point) */
+#if defined(MBEDTLS_BIGNUM_MEXP_WITHOUT_RRMODN_ALT)
+    MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod_without_RRmodN(&ctx->Vi, &ctx->Vi, &ctx->E, &ctx->N, MONTMULT_N_MODULUS) );
+#else
     MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &ctx->Vi, &ctx->Vi, &ctx->E, &ctx->N, &ctx->RN ) );
+#endif
 
 
 cleanup:
@@ -934,8 +978,12 @@ int mbedtls_rsa_private( mbedtls_rsa_context *ctx,
      * T = T * Vi mod N
      */
     MBEDTLS_MPI_CHK( rsa_prepare_blinding( ctx, f_rng, p_rng ) );
+#if defined(MBEDTLS_BIGNUM_MONTMUL_ALT)
+    MBEDTLS_MPI_CHK( mpi_montmul_alt(&T, &T, &ctx->Vi, &ctx->N) );
+#else
     MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( &T, &T, &ctx->Vi ) );
     MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( &T, &T, &ctx->N ) );
+#endif
 
     /*
      * Exponent blinding
@@ -987,9 +1035,13 @@ int mbedtls_rsa_private( mbedtls_rsa_context *ctx,
      * TP = input ^ dP mod P
      * TQ = input ^ dQ mod Q
      */
-
+// #if defined(MBEDTLS_BIGNUM_MEXP_WITHOUT_RRMODN_ALT)
+//     MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod_without_RRmodN(&TP, &T, DP, &ctx->P, MONTMULT_P_MODULUS) );
+//     MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod_without_RRmodN(&TQ, &T, DQ, &ctx->Q, MONTMULT_Q_MODULUS) );
+// #else
     MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &TP, &T, DP, &ctx->P, &ctx->RP ) );
     MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &TQ, &T, DQ, &ctx->Q, &ctx->RQ ) );
+// #endif
 
     /*
      * T = (TP - TQ) * (Q^-1 mod P) mod P
@@ -1009,12 +1061,20 @@ int mbedtls_rsa_private( mbedtls_rsa_context *ctx,
      * Unblind
      * T = T * Vf mod N
      */
+#if defined(MBEDTLS_BIGNUM_MONTMUL_ALT)
+    MBEDTLS_MPI_CHK( mpi_montmul_alt(&T, &T, &ctx->Vf, &ctx->N) );
+#else
     MBEDTLS_MPI_CHK( mbedtls_mpi_mul_mpi( &T, &T, &ctx->Vf ) );
     MBEDTLS_MPI_CHK( mbedtls_mpi_mod_mpi( &T, &T, &ctx->N ) );
+#endif
 
     /* Verify the result to prevent glitching attacks. */
+#if defined(MBEDTLS_BIGNUM_MEXP_WITHOUT_RRMODN_ALT)
+    MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod_without_RRmodN(&C, &T, &ctx->E, &ctx->N, MONTMULT_N_MODULUS) );
+#else
     MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &C, &T, &ctx->E,
                                           &ctx->N, &ctx->RN ) );
+#endif
     if( mbedtls_mpi_cmp_mpi( &C, &I ) != 0 )
     {
         ret = MBEDTLS_ERR_RSA_VERIFY_FAILED;
@@ -2376,6 +2436,11 @@ int mbedtls_rsa_self_test( int verbose )
     MBEDTLS_MPI_CHK( mbedtls_rsa_import( &rsa, NULL, NULL, NULL, &K, NULL ) );
     MBEDTLS_MPI_CHK( mbedtls_mpi_read_string( &K, 16, RSA_E  ) );
     MBEDTLS_MPI_CHK( mbedtls_rsa_import( &rsa, NULL, NULL, NULL, NULL, &K ) );
+
+#if defined(MBEDTLS_RSA_BACKGROUND_ALT)
+    /* hardware mexp/montmult background prepare */
+    MBEDTLS_MPI_CHK( mpi_mont_config(&rsa.N, &rsa.P, &rsa.Q) );
+#endif
 
     MBEDTLS_MPI_CHK( mbedtls_rsa_complete( &rsa ) );
 

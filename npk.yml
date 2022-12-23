@@ -1,0 +1,33 @@
+## Package Base Information
+name: mwp-libmbedtls
+owner: nuclei
+description: mbedtls v3.3.0 accelerated by nuclei engine
+type: mwp
+version: 0.1.0
+keywords:
+  - library
+  - mbedtls
+  - crypto
+license: Apache-2.0
+homepage: https://github.com/Nuclei-Software/mbedtls
+
+dependencies:
+  - name: sdk-nuclei_sdk
+
+packinfo:
+  name: mbedtls accelerated by nuclei HASH/CRYP/ACRYP engine
+  doc:
+    website: https://github.com/Nuclei-Software/mbedtls
+    usermanual:
+
+
+## Source Code Management
+codemanage:
+  installdir: mbedtls
+  copyfiles:
+    - path: ["library/", "accelerator/xlcrypto/", "tests/src/", "include/", "tests/include" ]
+  incdirs:
+    - path: ["include/", "library/", "tests/include", "accelerator/xlcrypto"]
+  # required latest Nuclei Studio NPK to support excludefiles
+  excludefiles:
+    - path: ["library/entropy*.c", "library/timing.c", "library/net_sockets.c", "library/x509_crt.c"]
