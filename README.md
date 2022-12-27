@@ -1,6 +1,8 @@
 README for Mbed TLS
 ===================
 
+> Please check [Nuclei Crypto Engine Support Guide](accelerator/xlcrypto/README.md) for how to use mbedtls with Nuclei Crypto Engine supported.
+
 Mbed TLS is a C library that implements cryptographic primitives, X.509 certificate manipulation and the SSL/TLS and DTLS protocols. Its small code footprint makes it suitable for embedded systems.
 
 Mbed TLS includes a reference implementation of the [PSA Cryptography API](#psa-cryptography-api). This is currently a preview for evaluation purposes only.
