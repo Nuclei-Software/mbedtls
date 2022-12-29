@@ -4,8 +4,6 @@
 
 Mbed TLS is a C library that implements cryptographic primitives, X.509 certificate manipulation and the SSL/TLS and DTLS protocols. Its small code footprint makes it suitable for embedded systems.
 
-Mbed TLS includes a reference implementation of the [PSA Cryptography API](#psa-cryptography-api). This is currently a preview for evaluation purposes only.
-
 ## Introduction of Nuclei crypto acceleration engine
 
 The Nuclei crypto acceleration engine includes **HASH**, **CRYP**, **ACRYP** IP.
@@ -168,11 +166,11 @@ The features of Nuclei Mbed TLS are listed below:
 
 ## How to use libmbedtls in Terminal
 
-1. Get Nuclei subsystem SDK, corresponding bitstream and board.
+1. Get Nuclei subsystem SDK, corresponding bitstream and board from AE or subsystem release archive.
 
 2. Get **libmbedtls** zip package from https://github.com/Nuclei-Software/mbedtls , unzip it and copy it to the *Components* of **$NUCLEI_SDK_ROOT**.
 
-   ![mbedtls_path](docs/Nuclei_images/mbedtls_path.png)
+   ![mbedtls_path](asserts/mbedtls_path.png)
 
 3. Setup Nuclei subsystem SDK to configure your toolchains and environment, you can refer to https://doc.nucleisys.com/nuclei_sdk/quickstart.html# for details.
 
@@ -198,7 +196,7 @@ The features of Nuclei Mbed TLS are listed below:
 
    - If you want to use UART terminal tool to view the application result, you can choose `screen` or `minicom` in Linux, `teraterm` in Windows, the default UART baudrate we use is `115200`. For example, test all HASH-related algorithm in *Components/mbedtls/examples/selftest* as follows:
 
-   ![selftest_result](docs/Nuclei_images/selftest_result.png)
+      ![selftest_result](asserts/selftest_result.png)
 
 ## How to use libmbedtls in Nuclei Studio IDE
 
@@ -210,45 +208,45 @@ The features of Nuclei Mbed TLS are listed below:
 
 3. Go to the Nuclei Package Management page to import the zip package of the subsystem SDK until the Status is installed, you need to make sure that only one version of NucleiSDK is installed.
 
-   ![npk_sdk_import](docs/Nuclei_images/npk_sdk_import.png)
+   ![npk_sdk_import](asserts/npk_sdk_import.png)
 
 4. Import the zip package of **libmbedtls** until the Status is installed:
 
-   ![npk_libmbedtls_import](docs/Nuclei_images/npk_libmbedtls_import.png)
+   ![npk_libmbedtls_import](asserts/npk_libmbedtls_import.png)
 
 5. Create a new Nuclei RISC-V C/C++ Project.
 
    - Choose the SoC, board and SDK, you need to select the SDK corresponding to the SoC of the current subsystem.
 
-   ![IDE_create](docs/Nuclei_images/IDE_create.png)
+      ![IDE_create](asserts/IDE_create.png)
 
    - Use Filters to filter the keyword **mbedtls** to quickly find the example you want to run, and then set the configuration items and click Finish. For example, you want to run **selftest** in **sram download mode** with **newlib nano with printf float**, you should configure it as follows:
 
-   ![IDE_configuration](docs/Nuclei_images/IDE_configuration.png)
+      ![IDE_configuration](asserts/IDE_configuration.png)
 
 6. Build and run application.
 
    - If you want to build your application, you can easily click build icon:
 
-   ![IDE_compile](docs/Nuclei_images/IDE_compile.png)
+      ![IDE_compile](asserts/IDE_compile.png)
 
    - If you want to run your application, you can easily click run icon:
 
-   ![IDE_run](docs/Nuclei_images/IDE_run.png)
+      ![IDE_run](asserts/IDE_run.png)
 
    - If you want to debug your application, you need to switch to debug mode:
 
-   ![IDE_debug](docs/Nuclei_images/IDE_debug.png)
+      ![IDE_debug](asserts/IDE_debug.png)
 
 7. You can view the program running status in run mode or debug mode.
 
    - run mode: run until the end
 
-   ![IDE_run_console](docs/Nuclei_images/IDE_run_console.png)
+      ![IDE_run_console](asserts/IDE_run_console.png)
 
    - debug mode: you can run to the breakpoint for debugging and analysis
 
-   ![IDE_debug_console](docs/Nuclei_images/IDE_debug_console.png)
+      ![IDE_debug_console](asserts/IDE_debug_console.png)
 
 ## Data performance
 
