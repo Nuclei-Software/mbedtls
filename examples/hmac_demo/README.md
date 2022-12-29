@@ -13,7 +13,7 @@ This example describles two hmac process and outputs success or not. Each HMAC a
 - MBEDTLS_MD_SHA384
 - MBEDTLS_MD_SHA512
 
-You can select the hardware acceleration of the corresponding algorithm by enabling the acceleration macros in `acc_config.h`, compile and run the example using hardware engine or software implement. Please refer to `mbedtls/README_Nuclei.md` for more details.
+You can select the hardware acceleration of the corresponding algorithm by enabling the acceleration macros in `acc_config.h`, compile and run the example using hardware engine or software implement. Please refer to `mbedtls/accelerator/xlcrypto/README.md` for more details.
 
 ## How to run this application
 

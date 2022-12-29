@@ -27,7 +27,7 @@ This example describes each crypto algorithm selftest process, you can use this 
 - ECC SHORT WEIERSTRASS
 - ECC MONTGOMERY
 
-You can select the hardware acceleration of the corresponding algorithm by enabling the acceleration macros in `acc_config.h`, compile and run the example using hardware engine or software implement. Please refer to `mbedtls/README_Nuclei.md` for more details.
+You can select the hardware acceleration of the corresponding algorithm by enabling the acceleration macros in `acc_config.h`, compile and run the example using hardware engine or software implement. Please refer to `mbedtls/accelerator/xlcrypto/README.md` for more details.
 
 ## How to run this application
 

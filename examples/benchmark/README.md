@@ -18,7 +18,7 @@ This example describes benchmark testing process and exports benchmark result of
 - ECDSA
 - ECDH
 
-You can select the hardware acceleration of the corresponding algorithm by enabling the acceleration macros in `acc_config.h`, compile and run the example and compare hardware and software benchmark result. Please refer to `mbedtls/README_Nuclei.md` for more details.
+You can select the hardware acceleration of the corresponding algorithm by enabling the acceleration macros in `acc_config.h`, compile and run the example and compare hardware and software benchmark result. Please refer to `mbedtls/accelerator/xlcrypto/README.md` for more details.
 
 ## How to run this application
 
