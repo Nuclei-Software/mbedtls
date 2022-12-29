@@ -10,7 +10,7 @@ keywords:
   - examples
 category: mbedtls baremetal application
 license: Apache-2.0
-homepage: https://github.com/Nuclei-Software/mbedtls/examples/selftest
+homepage: https://github.com/Nuclei-Software/mbedtls/tree/nuclei/v3.3.0/examples/selftest
 
 ## Package Dependency
 dependencies:
