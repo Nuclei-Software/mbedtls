@@ -99,10 +99,10 @@ int mbedtls_aes_crypt_ecb_multi( mbedtls_aes_context *ctx,
 #endif
 
     /* CRYP Initialization Structure */
-    AES_CRYP_InitStructure.CRYP_Algo  = CRYP_Algo_AES;
-    AES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_AlgoMode_ECB;
-    AES_CRYP_InitStructure.CRYP_DataType = CRYP_DataType_8b;
-    AES_CRYP_InitStructure.CRYP_OdatType = CRYP_OdatType_8b;
+    AES_CRYP_InitStructure.CRYP_Algo  = CRYP_RF_CR_ALGO_AES;
+    AES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_RF_CR_ALGOMODE_ECB;
+    AES_CRYP_InitStructure.CRYP_DataType = CRYP_RF_CR_IDATYPE_BYTE_SWAP;
+    AES_CRYP_InitStructure.CRYP_OdatType = CRYP_RF_CR_ODATTYPE_BYTE_SWAP;
     AES_CRYP_InitStructure.CRYP_Gcm_Ccmph = UNUSED;
 
     AES_CRYP_InitStructure.CRYP_Dout_Cnt = len / 4;
@@ -114,31 +114,31 @@ int mbedtls_aes_crypt_ecb_multi( mbedtls_aes_context *ctx,
     AES_CRYP_InitStructure.CRYP_Infifo_afull_th = len / 4;
 
     if ( mode == MBEDTLS_AES_ENCRYPT ) {
-        AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Encrypt;
+        AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_ENCRYPT;
     } else {
-        AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Decrypt;
+        AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_DECRYPT;
     }
 
     switch ( ctx->nr ) {
-        case 10: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_128b; break;
-        case 12: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_192b; break;
-        case 14: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_256b; break;
+        case 10: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_128BIT; break;
+        case 12: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_192BIT; break;
+        case 14: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_256BIT; break;
         default : return( MBEDTLS_ERR_AES_INVALID_KEY_LENGTH );
     }
 
 #if defined(MBEDTLS_AES_DMA_ALT)
-    /* Crypto Init for CRYP_AlgoDir_Decrypt process */
+    /* Crypto Init for CRYP_RF_CR_ALGODIR_DECRYPT process */
     CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
     /* Flush IN/OUT FIFO */
     CRYP_FIFOFlush(CRYP0);
     /* Enable Crypto processor */
     CRYP_Cmd(CRYP0, ENABLE);
-    CRYP_DMACmd(CRYP0, CRYP_DIEN, ENABLE);
+    CRYP_DMACmd(CRYP0, CRYP_RF_DMAEN_DIEN, ENABLE);
     UDMA_Cmd(CRYP0_TX_DMA_DMA_CH, ENABLE);
 
     /* Read the Output block from the Output FIFO */
-    while (CRYP0->CRYP_DOUT_CNT != 0) {
-        if (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE)) {
+    while (CRYP0->DOUT_CNT != 0) {
+        if (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE)) {
             *pOut = CRYP_DataOut(CRYP0);
             pOut += 1;
         }
@@ -146,7 +146,7 @@ int mbedtls_aes_crypt_ecb_multi( mbedtls_aes_context *ctx,
 
     /* Read the Done flag */
     do {
-        status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_DONE);
+        status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_DONE);
     } while (status == RESET);
 
     CRYP_Cmd(CRYP0, DISABLE);
@@ -155,7 +155,7 @@ int mbedtls_aes_crypt_ecb_multi( mbedtls_aes_context *ctx,
         AES_CRYP_InitStructure.CRYP_Dout_Cnt = 4;
         AES_CRYP_InitStructure.CRYP_Din_Cnt = 4;
 
-        /* Crypto Init for CRYP_AlgoDir_Decrypt process */
+        /* Crypto Init for CRYP_RF_CR_ALGODIR_DECRYPT process */
         CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
         /* Enable Crypto processor */
         CRYP_Cmd(CRYP0, ENABLE);
@@ -168,7 +168,7 @@ int mbedtls_aes_crypt_ecb_multi( mbedtls_aes_context *ctx,
             /* Read the Output block from the Output FIFO */
             for (i = 0;i < 4;i++) {
                 do {
-                    status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE);
+                    status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE);
                 } while (status == RESET);
                 *pOut = CRYP_DataOut(CRYP0);
                 pOut += 1;
@@ -185,7 +185,7 @@ int mbedtls_aes_crypt_ecb_multi( mbedtls_aes_context *ctx,
             }
             /* Read the Output block from the Output FIFO */
             do {
-                status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE);
+                status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE);
             } while (status == RESET);
 
             for (i = 0;i < 4;i++) {
@@ -225,10 +225,10 @@ int mbedtls_internal_aes_encrypt( mbedtls_aes_context *ctx,
 #endif
 
     /* CRYP Initialization Structure */
-    AES_CRYP_InitStructure.CRYP_Algo  = CRYP_Algo_AES;
-    AES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_AlgoMode_ECB;
-    AES_CRYP_InitStructure.CRYP_DataType = CRYP_DataType_8b;
-    AES_CRYP_InitStructure.CRYP_OdatType = CRYP_OdatType_8b;
+    AES_CRYP_InitStructure.CRYP_Algo  = CRYP_RF_CR_ALGO_AES;
+    AES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_RF_CR_ALGOMODE_ECB;
+    AES_CRYP_InitStructure.CRYP_DataType = CRYP_RF_CR_IDATYPE_BYTE_SWAP;
+    AES_CRYP_InitStructure.CRYP_OdatType = CRYP_RF_CR_ODATTYPE_BYTE_SWAP;
     AES_CRYP_InitStructure.CRYP_Gcm_Ccmph = UNUSED;
 
     AES_CRYP_InitStructure.CRYP_Dout_Cnt = 4;
@@ -239,29 +239,29 @@ int mbedtls_internal_aes_encrypt( mbedtls_aes_context *ctx,
     AES_CRYP_InitStructure.CRYP_Ofifo_aempty_th = 4;
     AES_CRYP_InitStructure.CRYP_Infifo_afull_th = 4;
 
-    AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Encrypt;
+    AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_ENCRYPT;
 
     switch ( ctx->nr ) {
-        case 10: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_128b; break;
-        case 12: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_192b; break;
-        case 14: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_256b; break;
+        case 10: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_128BIT; break;
+        case 12: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_192BIT; break;
+        case 14: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_256BIT; break;
         default : return( MBEDTLS_ERR_AES_INVALID_KEY_LENGTH );
     }
 
 #if defined(MBEDTLS_AES_DMA_ALT)
-    /* Crypto Init for CRYP_AlgoDir_Decrypt process */
+    /* Crypto Init for CRYP_RF_CR_ALGODIR_DECRYPT process */
     CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
     /* Flush IN/OUT FIFO */
     CRYP_FIFOFlush(CRYP0);
     /* Enable Crypto processor */
     CRYP_Cmd(CRYP0, ENABLE);
     /* Enable Crypto DMA */
-    CRYP_DMACmd(CRYP0, CRYP_DIEN, ENABLE);
+    CRYP_DMACmd(CRYP0, CRYP_RF_DMAEN_DIEN, ENABLE);
     UDMA_Cmd(CRYP0_TX_DMA_DMA_CH, ENABLE);
 
     /* Read the Output block from the Output FIFO */
-    while (CRYP0->CRYP_DOUT_CNT != 0) {
-        if (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE)) {
+    while (CRYP0->DOUT_CNT != 0) {
+        if (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE)) {
             *pOut = CRYP_DataOut(CRYP0);
             pOut += 1;
         }
@@ -269,7 +269,7 @@ int mbedtls_internal_aes_encrypt( mbedtls_aes_context *ctx,
 
     /* Read the Done flag */
     do {
-        status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_DONE);
+        status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_DONE);
     } while (status == RESET);
 
     CRYP_Cmd(CRYP0, DISABLE);
@@ -278,7 +278,7 @@ int mbedtls_internal_aes_encrypt( mbedtls_aes_context *ctx,
         AES_CRYP_InitStructure.CRYP_Dout_Cnt = 4;
         AES_CRYP_InitStructure.CRYP_Din_Cnt = 4;
 
-        /* Crypto Init for CRYP_AlgoDir_Decrypt process */
+        /* Crypto Init for CRYP_RF_CR_ALGODIR_DECRYPT process */
         CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
         /* Enable Crypto processor */
         CRYP_Cmd(CRYP0, ENABLE);
@@ -291,7 +291,7 @@ int mbedtls_internal_aes_encrypt( mbedtls_aes_context *ctx,
             /* Read the Output block from the Output FIFO */
             for (i = 0;i < 4;i++) {
                 do {
-                    status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE);
+                    status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE);
                 } while (status == RESET);
                 *pOut = CRYP_DataOut(CRYP0);
                 pOut += 1;
@@ -308,7 +308,7 @@ int mbedtls_internal_aes_encrypt( mbedtls_aes_context *ctx,
             }
             /* Read the Output block from the Output FIFO */
             do {
-                status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE);
+                status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE);
             } while (status == RESET);
 
             for (i = 0;i < 4;i++) {
@@ -347,10 +347,10 @@ int mbedtls_internal_aes_decrypt( mbedtls_aes_context *ctx,
 #endif
 
     /* CRYP Initialization Structure */
-    AES_CRYP_InitStructure.CRYP_Algo  = CRYP_Algo_AES;
-    AES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_AlgoMode_ECB;
-    AES_CRYP_InitStructure.CRYP_DataType = CRYP_DataType_8b;
-    AES_CRYP_InitStructure.CRYP_OdatType = CRYP_OdatType_8b;
+    AES_CRYP_InitStructure.CRYP_Algo  = CRYP_RF_CR_ALGO_AES;
+    AES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_RF_CR_ALGOMODE_ECB;
+    AES_CRYP_InitStructure.CRYP_DataType = CRYP_RF_CR_IDATYPE_BYTE_SWAP;
+    AES_CRYP_InitStructure.CRYP_OdatType = CRYP_RF_CR_ODATTYPE_BYTE_SWAP;
     AES_CRYP_InitStructure.CRYP_Gcm_Ccmph = UNUSED;
 
     AES_CRYP_InitStructure.CRYP_Dout_Cnt = 4;
@@ -361,29 +361,29 @@ int mbedtls_internal_aes_decrypt( mbedtls_aes_context *ctx,
     AES_CRYP_InitStructure.CRYP_Ofifo_aempty_th = 4;
     AES_CRYP_InitStructure.CRYP_Infifo_afull_th = 4;
 
-    AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Decrypt;
+    AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_DECRYPT;
 
     switch ( ctx->nr ) {
-        case 10: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_128b; break;
-        case 12: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_192b; break;
-        case 14: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_256b; break;
+        case 10: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_128BIT; break;
+        case 12: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_192BIT; break;
+        case 14: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_256BIT; break;
         default : return( MBEDTLS_ERR_AES_INVALID_KEY_LENGTH );
     }
 
 #if defined(MBEDTLS_AES_DMA_ALT)
-    /* Crypto Init for CRYP_AlgoDir_Decrypt process */
+    /* Crypto Init for CRYP_RF_CR_ALGODIR_DECRYPT process */
     CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
     /* Flush IN/OUT FIFO */
     CRYP_FIFOFlush(CRYP0);
     /* Enable Crypto processor */
     CRYP_Cmd(CRYP0, ENABLE);
     /* Enable Crypto DMA */
-    CRYP_DMACmd(CRYP0, CRYP_DIEN, ENABLE);
+    CRYP_DMACmd(CRYP0, CRYP_RF_DMAEN_DIEN, ENABLE);
     UDMA_Cmd(CRYP0_TX_DMA_DMA_CH, ENABLE);
 
     /* Read the Output block from the Output FIFO */
-    while (CRYP0->CRYP_DOUT_CNT != 0) {
-        if (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE)) {
+    while (CRYP0->DOUT_CNT != 0) {
+        if (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE)) {
             *pOut = CRYP_DataOut(CRYP0);
             pOut += 1;
         }
@@ -391,7 +391,7 @@ int mbedtls_internal_aes_decrypt( mbedtls_aes_context *ctx,
 
     /* Read the Done flag */
     do {
-        status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_DONE);
+        status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_DONE);
     } while (status == RESET);
 
     CRYP_Cmd(CRYP0, DISABLE);
@@ -400,7 +400,7 @@ int mbedtls_internal_aes_decrypt( mbedtls_aes_context *ctx,
         AES_CRYP_InitStructure.CRYP_Dout_Cnt = 4;
         AES_CRYP_InitStructure.CRYP_Din_Cnt = 4;
 
-        /* Crypto Init for CRYP_AlgoDir_Decrypt process */
+        /* Crypto Init for CRYP_RF_CR_ALGODIR_DECRYPT process */
         CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
         /* Enable Crypto processor */
         CRYP_Cmd(CRYP0, ENABLE);
@@ -413,7 +413,7 @@ int mbedtls_internal_aes_decrypt( mbedtls_aes_context *ctx,
             /* Read the Output block from the Output FIFO */
             for (i = 0;i < 4;i++) {
                 do {
-                    status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE);
+                    status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE);
                 } while (status == RESET);
                 *pOut = CRYP_DataOut(CRYP0);
                 pOut += 1;
@@ -430,7 +430,7 @@ int mbedtls_internal_aes_decrypt( mbedtls_aes_context *ctx,
             }
             /* Read the Output block from the Output FIFO */
             do {
-                status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE);
+                status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE);
             } while (status == RESET);
 
             for (i = 0;i < 4;i++) {
@@ -484,7 +484,7 @@ int mbedtls_aes_setkey_enc( mbedtls_aes_context *ctx, const unsigned char *key,
     }
 
     /* Initializes the CRYP encrypto keys */
-    CRYP_Key_Selection(CRYP0, CRYP_CFG_KEY);
+    CRYP_Key_Selection(CRYP0, CRYP_RF_EFUSE_KEY_KEY_SEL_USE_CFG_KEY, 0);
     CRYP_FIFOFlush(CRYP0);
     CRYP_KeyInit(CRYP0, &AES_CRYP_KeyInitStructure);
 
@@ -532,13 +532,13 @@ int mbedtls_aes_setkey_dec( mbedtls_aes_context *ctx, const unsigned char *key,
     }
 
     /* Initializes the CRYP encrypto keys */
-    CRYP_Key_Selection(CRYP0, CRYP_CFG_KEY);
+    CRYP_Key_Selection(CRYP0, CRYP_RF_EFUSE_KEY_KEY_SEL_USE_CFG_KEY, 0);
     CRYP_FIFOFlush(CRYP0);
     CRYP_KeyInit(CRYP0, &AES_CRYP_KeyInitStructure);
 
     /* Crypto structures configure */
-    AES_CRYP_InitStructure.CRYP_Algo = CRYP_Algo_AES;
-    AES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_AlgoMode_KEY;
+    AES_CRYP_InitStructure.CRYP_Algo = CRYP_RF_CR_ALGO_AES;
+    AES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_RF_CR_ALGOMODE_DKEY_PREP;
     AES_CRYP_InitStructure.CRYP_AlgoDir = UNUSED;
     AES_CRYP_InitStructure.CRYP_DataType = UNUSED;
     AES_CRYP_InitStructure.CRYP_Gcm_Ccmph = UNUSED;
@@ -552,25 +552,25 @@ int mbedtls_aes_setkey_dec( mbedtls_aes_context *ctx, const unsigned char *key,
     AES_CRYP_InitStructure.CRYP_Infifo_afull_th = UNUSED;
 
     switch ( ctx->nr ) {
-        case 10: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_128b; break;
-        case 12: AES_CRYP_InitStructure.CRYP_KeySize  = CRYP_KeySize_192b; break;
-        case 14: AES_CRYP_InitStructure.CRYP_KeySize  = CRYP_KeySize_256b; break;
+        case 10: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_128BIT; break;
+        case 12: AES_CRYP_InitStructure.CRYP_KeySize  = CRYP_RF_CR_KEYSIZE_192BIT; break;
+        case 14: AES_CRYP_InitStructure.CRYP_KeySize  = CRYP_RF_CR_KEYSIZE_256BIT; break;
         default : return( MBEDTLS_ERR_AES_INVALID_KEY_LENGTH );
     }
 
     CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
 
     /* Select Configure KEY Mode */
-    CRYP_Key_Selection(CRYP0, CRYP_CFG_KEY);
+    CRYP_Key_Selection(CRYP0, CRYP_RF_EFUSE_KEY_KEY_SEL_USE_CFG_KEY, 0);
 
     /* Disable mdrst and Enable Crypto processor */
     CRYP_Cmd(CRYP0, ENABLE);
 
     /* Wait until the key prepare has finished */
     do {
-        pre_status = CRYP_GetITStatus(CRYP0, CRYP_IT_KPRD);
+        pre_status = CRYP_GetITStatus(CRYP0, CRYP_RF_RISR_KEYPRPIS);
     } while (pre_status == RESET);
-    CRYP_ClearITPendingBit(CRYP0, CRYP_IT_KPRD);
+    CRYP_ClearITPendingBit(CRYP0, CRYP_RF_RISR_KEYPRPIS);
 
     CRYP_Cmd(CRYP0, DISABLE);
 
@@ -593,7 +593,7 @@ int mbedtls_aes_setkey_dec( mbedtls_aes_context *ctx, const unsigned char *key,
     }
 
     /* Initializes the CRYP decrypto keys */
-    CRYP_Key_Selection(CRYP0, CRYP_CFG_KEY);
+    CRYP_Key_Selection(CRYP0, CRYP_RF_EFUSE_KEY_KEY_SEL_USE_CFG_KEY, 0);
     CRYP_FIFOFlush(CRYP0);
     CRYP_KeyInit(CRYP0, &AES_CRYP_KeyInitStructure);
 
@@ -633,10 +633,10 @@ int mbedtls_aes_crypt_cbc( mbedtls_aes_context *ctx,
 #endif
 
     /* CRYP Initialization Structure */
-    AES_CRYP_InitStructure.CRYP_Algo = CRYP_Algo_AES;
-    AES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_AlgoMode_CBC;
-    AES_CRYP_InitStructure.CRYP_DataType = CRYP_DataType_8b;
-    AES_CRYP_InitStructure.CRYP_OdatType = CRYP_OdatType_8b;
+    AES_CRYP_InitStructure.CRYP_Algo = CRYP_RF_CR_ALGO_AES;
+    AES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_RF_CR_ALGOMODE_CBC;
+    AES_CRYP_InitStructure.CRYP_DataType = CRYP_RF_CR_IDATYPE_BYTE_SWAP;
+    AES_CRYP_InitStructure.CRYP_OdatType = CRYP_RF_CR_ODATTYPE_BYTE_SWAP;
     AES_CRYP_InitStructure.CRYP_Gcm_Ccmph = UNUSED;
 
     AES_CRYP_InitStructure.CRYP_Dout_Cnt = len / 4;
@@ -648,9 +648,9 @@ int mbedtls_aes_crypt_cbc( mbedtls_aes_context *ctx,
     AES_CRYP_InitStructure.CRYP_Infifo_afull_th = len / 4;
 
     switch ( ctx->nr ) {
-        case 10: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_128b; break;
-        case 12: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_192b; break;
-        case 14: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_256b; break;
+        case 10: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_128BIT; break;
+        case 12: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_192BIT; break;
+        case 14: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_256BIT; break;
         default : return( MBEDTLS_ERR_AES_INVALID_KEY_LENGTH );
     }
 
@@ -664,9 +664,9 @@ int mbedtls_aes_crypt_cbc( mbedtls_aes_context *ctx,
     }
 
     if (mode == MBEDTLS_AES_ENCRYPT) {
-        AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Encrypt;
+        AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_ENCRYPT;
     } else {
-        AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Decrypt;
+        AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_DECRYPT;
         /* Refresh the iv value when the input length is 16 */
         if (length == 16) {
             memcpy((unsigned char *)iv, (unsigned char *)input, length);
@@ -678,18 +678,18 @@ int mbedtls_aes_crypt_cbc( mbedtls_aes_context *ctx,
     CRYP_IVInit(CRYP0, &AES_CRYP_IVInitStructure);
 
 #if defined(MBEDTLS_AES_DMA_ALT)
-    /* Crypto Init for CRYP_AlgoDir_Decrypt process */
+    /* Crypto Init for CRYP_RF_CR_ALGODIR_DECRYPT process */
     CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
     /* Flush IN/OUT FIFO */
     CRYP_FIFOFlush(CRYP0);
     /* Enable Crypto processor */
     CRYP_Cmd(CRYP0, ENABLE);
-    CRYP_DMACmd(CRYP0, CRYP_DIEN, ENABLE);
+    CRYP_DMACmd(CRYP0, CRYP_RF_DMAEN_DIEN, ENABLE);
     UDMA_Cmd(CRYP0_TX_DMA_DMA_CH, ENABLE);
 
     /* Read the Output block from the Output FIFO */
-    while (CRYP0->CRYP_DOUT_CNT != 0) {
-        if (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE)) {
+    while (CRYP0->DOUT_CNT != 0) {
+        if (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE)) {
             *pOut = CRYP_DataOut(CRYP0);
             pOut += 1;
         }
@@ -697,7 +697,7 @@ int mbedtls_aes_crypt_cbc( mbedtls_aes_context *ctx,
 
     /* Read the Done flag */
     do {
-        status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_DONE);
+        status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_DONE);
     } while (status == RESET);
 
     CRYP_Cmd(CRYP0, DISABLE);
@@ -706,7 +706,7 @@ int mbedtls_aes_crypt_cbc( mbedtls_aes_context *ctx,
         AES_CRYP_InitStructure.CRYP_Dout_Cnt = 4;
         AES_CRYP_InitStructure.CRYP_Din_Cnt = 4;
 
-        /* Crypto Init for CRYP_AlgoDir_Decrypt process */
+        /* Crypto Init for CRYP_RF_CR_ALGODIR_DECRYPT process */
         CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
         /* Enable Crypto processor */
         CRYP_Cmd(CRYP0, ENABLE);
@@ -719,7 +719,7 @@ int mbedtls_aes_crypt_cbc( mbedtls_aes_context *ctx,
             /* Read the Output block from the Output FIFO */
             for (i = 0;i < 4;i++) {
                 do {
-                    status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE);
+                    status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE);
                 } while (status == RESET);
                 *pOut = CRYP_DataOut(CRYP0);
                 pOut += 1;
@@ -736,7 +736,7 @@ int mbedtls_aes_crypt_cbc( mbedtls_aes_context *ctx,
             }
             /* Read the Output block from the Output FIFO */
             do {
-                status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE);
+                status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE);
             } while (status == RESET);
 
             for (i = 0;i < 4;i++) {
@@ -791,10 +791,10 @@ int mbedtls_aes_crypt_ctr( mbedtls_aes_context *ctx,
 #endif
 
     /* CRYP Initialization Structure */
-    AES_CRYP_InitStructure.CRYP_Algo = CRYP_Algo_AES;
-    AES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_AlgoMode_CTR;
-    AES_CRYP_InitStructure.CRYP_DataType = CRYP_DataType_8b;
-    AES_CRYP_InitStructure.CRYP_OdatType = CRYP_OdatType_8b;
+    AES_CRYP_InitStructure.CRYP_Algo = CRYP_RF_CR_ALGO_AES;
+    AES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_RF_CR_ALGOMODE_CTR;
+    AES_CRYP_InitStructure.CRYP_DataType = CRYP_RF_CR_IDATYPE_BYTE_SWAP;
+    AES_CRYP_InitStructure.CRYP_OdatType = CRYP_RF_CR_ODATTYPE_BYTE_SWAP;
     AES_CRYP_InitStructure.CRYP_Gcm_Ccmph = UNUSED;
 
     AES_CRYP_InitStructure.CRYP_Dout_Cnt = len / 4;
@@ -805,12 +805,12 @@ int mbedtls_aes_crypt_ctr( mbedtls_aes_context *ctx,
     AES_CRYP_InitStructure.CRYP_Ofifo_aempty_th = len / 4;
     AES_CRYP_InitStructure.CRYP_Infifo_afull_th = len / 4;
 
-    AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Encrypt;
+    AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_ENCRYPT;
 
     switch ( ctx->nr ) {
-        case 10: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_128b; break;
-        case 12: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_192b; break;
-        case 14: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_256b; break;
+        case 10: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_128BIT; break;
+        case 12: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_192BIT; break;
+        case 14: AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_256BIT; break;
         default : return( MBEDTLS_ERR_AES_INVALID_KEY_LENGTH );
     }
 
@@ -829,18 +829,18 @@ int mbedtls_aes_crypt_ctr( mbedtls_aes_context *ctx,
     CRYP_IVInit(CRYP0, &AES_CRYP_IVInitStructure);
 
 #if defined(MBEDTLS_AES_DMA_ALT)
-    /* Crypto Init for CRYP_AlgoDir_Decrypt process */
+    /* Crypto Init for CRYP_RF_CR_ALGODIR_DECRYPT process */
     CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
     /* Flush IN/OUT FIFO */
     CRYP_FIFOFlush(CRYP0);
     /* Enable Crypto processor */
     CRYP_Cmd(CRYP0, ENABLE);
-    CRYP_DMACmd(CRYP0, CRYP_DIEN, ENABLE);
+    CRYP_DMACmd(CRYP0, CRYP_RF_DMAEN_DIEN, ENABLE);
     UDMA_Cmd(CRYP0_TX_DMA_DMA_CH, ENABLE);
 
     /* Read the Output block from the Output FIFO */
-    while (CRYP0->CRYP_DOUT_CNT != 0) {
-        if (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE)) {
+    while (CRYP0->DOUT_CNT != 0) {
+        if (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE)) {
             *pOut = CRYP_DataOut(CRYP0);
             pOut += 1;
         }
@@ -848,7 +848,7 @@ int mbedtls_aes_crypt_ctr( mbedtls_aes_context *ctx,
 
     /* Read the Done flag */
     do {
-        status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_DONE);
+        status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_DONE);
     } while (status == RESET);
 
     CRYP_Cmd(CRYP0, DISABLE);
@@ -856,7 +856,7 @@ int mbedtls_aes_crypt_ctr( mbedtls_aes_context *ctx,
     while (len > 0) {
         AES_CRYP_InitStructure.CRYP_Dout_Cnt = 4;
         AES_CRYP_InitStructure.CRYP_Din_Cnt = 4;
-        /* Crypto Init for CRYP_AlgoDir_Decrypt process */
+        /* Crypto Init for CRYP_RF_CR_ALGODIR_DECRYPT process */
         CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
         /* Enable Crypto processor */
         CRYP_Cmd(CRYP0, ENABLE);
@@ -869,7 +869,7 @@ int mbedtls_aes_crypt_ctr( mbedtls_aes_context *ctx,
             /* Read the Output block from the Output FIFO */
             for (i = 0;i < 4;i++) {
                 do {
-                    status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE);
+                    status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE);
                 } while (status == RESET);
                 *pOut = CRYP_DataOut(CRYP0);
                 pOut += 1;
@@ -886,7 +886,7 @@ int mbedtls_aes_crypt_ctr( mbedtls_aes_context *ctx,
             }
             /* Read the Output block from the Output FIFO */
             do {
-                status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE);
+                status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE);
             } while (status == RESET);
 
             for (i = 0;i < 4;i++) {

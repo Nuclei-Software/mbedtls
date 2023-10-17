@@ -68,7 +68,7 @@ int mbedtls_gcm_setkey( mbedtls_gcm_context *ctx,
         }
 
         ctx->len = (uint64_t)keybits;
-        ctx->HL[0] = CRYP_Algo_AES;
+        ctx->HL[0] = CRYP_RF_CR_ALGO_AES;
         mbedtls_aes_free( &aes_ctx );
     }
     return( 0 );
@@ -152,9 +152,9 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
 
     /* CRYP Initialization Structure */
     AES_CRYP_InitStructure.CRYP_Algo = algo;
-    AES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_AlgoMode_GCM;
-    AES_CRYP_InitStructure.CRYP_DataType = CRYP_DataType_8b;
-    AES_CRYP_InitStructure.CRYP_OdatType = CRYP_OdatType_8b;
+    AES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_RF_CR_ALGOMODE_GCM;
+    AES_CRYP_InitStructure.CRYP_DataType = CRYP_RF_CR_IDATYPE_BYTE_SWAP;
+    AES_CRYP_InitStructure.CRYP_OdatType = CRYP_RF_CR_ODATTYPE_BYTE_SWAP;
     AES_CRYP_InitStructure.CRYP_Gcm_Ccmph = UNUSED;
 
     AES_CRYP_InitStructure.CRYP_Rlen = length % 16;
@@ -164,31 +164,31 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
 
     switch (keysize) {
         case 128:
-            AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_128b;
+            AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_128BIT;
             break;
         case 192:
-            AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_192b;
+            AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_192BIT;
             break;
         case 256:
-            AES_CRYP_InitStructure.CRYP_KeySize = CRYP_KeySize_256b;
+            AES_CRYP_InitStructure.CRYP_KeySize = CRYP_RF_CR_KEYSIZE_256BIT;
             break;
         default:
         break;
     }
 
-    /*------------------------- CRYP_AlgoDir_Encrypt -------------------------*/
+    /*------------------------- CRYP_RF_CR_ALGODIR_ENCRYPT -------------------------*/
     if(mode == MBEDTLS_GCM_ENCRYPT)
     {
         /* Crypto Init for Key preparation for decryption process */
-        AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Encrypt;
+        AES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_ENCRYPT;
         CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
 
     /***************************** Init phase *********************************/
         /* Select init phase */
-        CRYP_PhaseConfig(CRYP0, CRYP_Initial_PH1);
+        CRYP_PhaseConfig(CRYP0, CRYP_RF_CR_GCM_CCMPH_INIT_PH);
         /* Enable Crypto processor */
         CRYP_Cmd(CRYP0, ENABLE);
-        while (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_BUSY) == 1) {}
+        while (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_CORE_BUSY) == 1) {}
         /* Disable Crypto processor */
         CRYP_Cmd(CRYP0, DISABLE);
     /***************************** header phase *******************************/
@@ -200,21 +200,21 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
             AES_CRYP_InitStructure.CRYP_Din_Cnt = AADRealLength / 4;
             CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
             /* Select header phase */
-            CRYP_PhaseConfig(CRYP0, CRYP_ADD_PH2);
+            CRYP_PhaseConfig(CRYP0, CRYP_RF_CR_GCM_CCMPH_AAD_PH);
             /* Enable Crypto processor */
             CRYP_Cmd(CRYP0, ENABLE);
         #if defined(MBEDTLS_GCM_DMA_ALT)
-            CRYP_DMACmd(CRYP0, CRYP_DIEN, ENABLE);
+            CRYP_DMACmd(CRYP0, CRYP_RF_DMAEN_DIEN, ENABLE);
             UDMA_Cmd(CRYP0_TX_DMA_DMA_CH, ENABLE);
 
             /* Read the Done flag */
             do {
-                busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_DONE);
+                busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_DONE);
             } while (busystatus == RESET);
         #else
             for (loopcounter = 0; (loopcounter < AADRealLength); loopcounter += 16) {
                 /* Wait until the IFEM flag is reset */
-                while (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_IFEM) == RESET) {}
+                while (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_IFEM) == RESET) {}
                 /* Write the Input block in the IN FIFO */
                 for ( i = 0; i < 4; i++ ) {
                     CRYP_DataIn(CRYP0, *(uint32_t*)(headeraddr));
@@ -225,7 +225,7 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
             /* Wait until the complete message has been processed */
             counter = 0;
             do {
-                busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_BUSY);
+                busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_CORE_BUSY);
                 counter++;
             } while ((counter != GCM_BUSY_TIMEOUT) && (busystatus != RESET));
 
@@ -245,29 +245,29 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
             AES_CRYP_InitStructure.CRYP_Din_Cnt = plainRealLength / 4;
             CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
             /* Select payload phase */
-            CRYP_PhaseConfig(CRYP0, CRYP_Text_PH3);
+            CRYP_PhaseConfig(CRYP0, CRYP_RF_CR_GCM_CCMPH_PAYLOAD_PH);
             /* Enable Crypto processor */
             CRYP_Cmd(CRYP0, ENABLE);
 
         #if defined(MBEDTLS_GCM_DMA_ALT)
-            CRYP_DMACmd(CRYP0, CRYP_DIEN, ENABLE);
+            CRYP_DMACmd(CRYP0, CRYP_RF_DMAEN_DIEN, ENABLE);
             UDMA_Cmd(CRYP0_TX_DMA_DMA_CH, ENABLE);
 
             /* Read the Output block from the Output FIFO */
-            while (CRYP0->CRYP_DOUT_CNT != 0) {
-                if (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE)) {
+            while (CRYP0->DOUT_CNT != 0) {
+                if (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE)) {
                     *(uint32_t*)(outputaddr) = CRYP_DataOut(CRYP0);
                     outputaddr += 4;
                 }
             }
             /* Read the Done flag */
             do {
-                busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_DONE);
+                busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_DONE);
             } while (busystatus == RESET);
         #else
             for (loopcounter = 0; loopcounter < plainRealLength; loopcounter += 16) {
                 /* Wait until the IFEM flag is reset */
-                while (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_IFEM) == RESET) {}
+                while (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_IFEM) == RESET) {}
                 /* Write the Input block in the IN FIFO */
                 for ( i = 0; i < 4; i++ ) {
                     CRYP_DataIn(CRYP0, *(uint32_t*)(inputaddr));
@@ -276,7 +276,7 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
                 /* Wait until the complete message has been processed */
                 counter = 0;
                 do {
-                    busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_BUSY);
+                    busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_CORE_BUSY);
                     counter++;
                 } while ((counter != GCM_BUSY_TIMEOUT) && (busystatus != RESET));
 
@@ -284,14 +284,14 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
                     return CRYP_TIMEOUT_ERR;
                 } else {
                     /* Wait until the OFNE flag is reset */
-                    while (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE) == RESET) {}
+                    while (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE) == RESET) {}
                     /* Read the Output block from the Output FIFO */
                     for ( i = 0; i < 4; i++ ) {
                         *(uint32_t*)(outputaddr) = CRYP_DataOut(CRYP0);
                         outputaddr += 4;
                     }
                 }
-                while (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_BUSY) == 1) {}
+                while (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_CORE_BUSY) == 1) {}
             }
         #endif
             /* Disable Crypto processor */
@@ -305,13 +305,13 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
         AES_CRYP_InitStructure.CRYP_Din_Cnt = 4;
         CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
         /* Select final phase */
-        CRYP_PhaseConfig(CRYP0, CRYP_Final_PH);
+        CRYP_PhaseConfig(CRYP0, CRYP_RF_CR_GCM_CCMPH_FINAL_PH);
 
         /* Enable Crypto processor */
         CRYP_Cmd(CRYP0, ENABLE);
 
         /* Wait until the IFEM flag is reset */
-        while (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_IFEM) == RESET) {}
+        while (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_IFEM) == RESET) {}
 
         /* Write number of bits concatenated with header in the IN FIFO */
         CRYP_DataIn(CRYP0, __REV(headerlength >> 32));
@@ -320,25 +320,25 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
         CRYP_DataIn(CRYP0, __REV(inputlength));
 
         /* Wait until the OFNE flag is reset */
-        while (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE) == RESET) {}
+        while (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE) == RESET) {}
 
         /* Read the Auth TAG in the OUT FIFO */
         for( i = 0; i < 4; i++ ) {
             *(uint32_t*)(tagaddr) = CRYP_DataOut(CRYP0);
             tagaddr += 4;
         }
-    /*------------------------- CRYP_AlgoDir_Decrypt -------------------------*/
+    /*------------------------- CRYP_RF_CR_ALGODIR_DECRYPT -------------------------*/
     } else {
         /* Crypto Init for Key preparation for decryption process */
-        AES_CRYP_InitStructure.CRYP_AlgoDir  = CRYP_AlgoDir_Decrypt;
+        AES_CRYP_InitStructure.CRYP_AlgoDir  = CRYP_RF_CR_ALGODIR_DECRYPT;
         CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
 
     /****************************** Init phase ********************************/
         /* Select init phase */
-        CRYP_PhaseConfig(CRYP0, CRYP_Initial_PH1);
+        CRYP_PhaseConfig(CRYP0, CRYP_RF_CR_GCM_CCMPH_INIT_PH);
         /* Enable Crypto processor */
         CRYP_Cmd(CRYP0, ENABLE);
-        while (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_BUSY) == 1) {}
+        while (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_CORE_BUSY) == 1) {}
         /* Disable Crypto processor */
         CRYP_Cmd(CRYP0, DISABLE);
     /***************************** header phase *******************************/
@@ -350,22 +350,22 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
             AES_CRYP_InitStructure.CRYP_Din_Cnt = AADRealLength / 4;
             CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
             /* Select header phase */
-            CRYP_PhaseConfig(CRYP0, CRYP_ADD_PH2);
+            CRYP_PhaseConfig(CRYP0, CRYP_RF_CR_GCM_CCMPH_AAD_PH);
             /* Enable Crypto processor */
             CRYP_Cmd(CRYP0, ENABLE);
 
 		#if defined(MBEDTLS_GCM_DMA_ALT)
-            CRYP_DMACmd(CRYP0, CRYP_DIEN, ENABLE);
+            CRYP_DMACmd(CRYP0, CRYP_RF_DMAEN_DIEN, ENABLE);
             UDMA_Cmd(CRYP0_TX_DMA_DMA_CH, ENABLE);
 
             /* Read the Done flag */
             do {
-                busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_DONE);
+                busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_DONE);
             } while (busystatus == RESET);
         #else
             for (loopcounter = 0; (loopcounter < AADRealLength); loopcounter += 16) {
                 /* Wait until the IFEM flag is reset */
-                while (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_IFEM) == RESET) {}
+                while (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_IFEM) == RESET) {}
                 /* Write the Input block in the IN FIFO */
                 for ( i = 0; i < 4; i++ ) {
                     CRYP_DataIn(CRYP0, *(uint32_t*)(headeraddr));
@@ -376,7 +376,7 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
             /* Wait until the complete message has been processed */
             counter = 0;
             do {
-                busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_BUSY);
+                busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_CORE_BUSY);
                 counter++;
             } while ((counter != GCM_BUSY_TIMEOUT) && (busystatus != RESET));
 
@@ -395,28 +395,28 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
             AES_CRYP_InitStructure.CRYP_Din_Cnt = plainRealLength / 4;
             CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
             /* Select payload phase */
-            CRYP_PhaseConfig(CRYP0, CRYP_Text_PH3);
+            CRYP_PhaseConfig(CRYP0, CRYP_RF_CR_GCM_CCMPH_PAYLOAD_PH);
             /* Enable Crypto processor */
             CRYP_Cmd(CRYP0, ENABLE);
         #if defined(MBEDTLS_GCM_DMA_ALT)
-            CRYP_DMACmd(CRYP0, CRYP_DIEN, ENABLE);
+            CRYP_DMACmd(CRYP0, CRYP_RF_DMAEN_DIEN, ENABLE);
             UDMA_Cmd(CRYP0_TX_DMA_DMA_CH, ENABLE);
 
             /* Read the Output block from the Output FIFO */
-            while (CRYP0->CRYP_DOUT_CNT != 0) {
-                if (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE)) {
+            while (CRYP0->DOUT_CNT != 0) {
+                if (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE)) {
                     *(uint32_t*)(outputaddr) = CRYP_DataOut(CRYP0);
                     outputaddr += 4;
                 }
             }
             /* Read the Done flag */
             do {
-                busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_DONE);
+                busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_DONE);
             } while (busystatus == RESET);
         #else
             for (loopcounter = 0; loopcounter < plainRealLength; loopcounter += 16) {
                 /* Wait until the IFEM flag is reset */
-                while (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_IFEM) == RESET) {}
+                while (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_IFEM) == RESET) {}
                 /* Write the Input block in the IN FIFO */
                 for ( i = 0; i < 4; i++ ) {
                     CRYP_DataIn(CRYP0, *(uint32_t*)(inputaddr));
@@ -425,7 +425,7 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
                 /* Wait until the complete message has been processed */
                 counter = 0;
                 do {
-                    busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_BUSY);
+                    busystatus = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_CORE_BUSY);
                     counter++;
                 } while ((counter != GCM_BUSY_TIMEOUT) && (busystatus != RESET));
 
@@ -433,14 +433,14 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
                     return CRYP_TIMEOUT_ERR;
                 } else {
                     /* Wait until the OFNE flag is reset */
-                    while (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE) == RESET) {}
+                    while (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE) == RESET) {}
                     /* Read the Output block from the Output FIFO */
                     for ( i = 0; i < 4; i++ ) {
                         *(uint32_t*)(outputaddr) = CRYP_DataOut(CRYP0 );
                         outputaddr += 4;
                     }
                 }
-                while (CRYP_GetFlagStatus(CRYP0,CRYP_FLAG_BUSY) == 1) {}
+                while (CRYP_GetFlagStatus(CRYP0,CRYP_RF_SR_CORE_BUSY) == 1) {}
             }
         #endif
             /* Disable Crypto processor */
@@ -455,13 +455,13 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
         CRYP_Init(CRYP0, &AES_CRYP_InitStructure);
 
         /* Select final phase */
-        CRYP_PhaseConfig(CRYP0, CRYP_Final_PH);
+        CRYP_PhaseConfig(CRYP0, CRYP_RF_CR_GCM_CCMPH_FINAL_PH);
 
         /* Enable Crypto processor */
         CRYP_Cmd(CRYP0, ENABLE);
 
         /* Wait until the IFEM flag is reset */
-        while (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_IFEM) == RESET) {}
+        while (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_IFEM) == RESET) {}
 
         /* Write number of bits concatenated with header in the IN FIFO */
         CRYP_DataIn(CRYP0, __REV(headerlength >> 32));
@@ -470,7 +470,7 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
         CRYP_DataIn(CRYP0, __REV(inputlength));
 
         /* Wait until the OFNE flag is reset */
-        while (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE) == RESET) {}
+        while (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE) == RESET) {}
 
         /* Read the Auth TAG in the OUT FIFO */
         for ( i = 0; i < 4; i++ ) {

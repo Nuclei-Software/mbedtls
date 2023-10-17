@@ -232,10 +232,10 @@ int mbedtls_des_crypt_ecb_mode( mbedtls_des_context *ctx,
     CRYP_Dma_Cfg(pIn, 8, 0);
 #endif
 
-    DES_CRYP_InitStructure.CRYP_Algo = CRYP_Algo_DES;
-    DES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_AlgoMode_ECB;
-    DES_CRYP_InitStructure.CRYP_DataType = CRYP_DataType_8b;
-    DES_CRYP_InitStructure.CRYP_OdatType = CRYP_OdatType_8b;
+    DES_CRYP_InitStructure.CRYP_Algo = CRYP_RF_CR_ALGO_DES;
+    DES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_RF_CR_ALGOMODE_ECB;
+    DES_CRYP_InitStructure.CRYP_DataType = CRYP_RF_CR_IDATYPE_BYTE_SWAP;
+    DES_CRYP_InitStructure.CRYP_OdatType = CRYP_RF_CR_ODATTYPE_BYTE_SWAP;
     DES_CRYP_InitStructure.CRYP_Gcm_Ccmph = UNUSED;
 
     DES_CRYP_InitStructure.CRYP_Dout_Cnt = 2;
@@ -247,9 +247,9 @@ int mbedtls_des_crypt_ecb_mode( mbedtls_des_context *ctx,
     DES_CRYP_InitStructure.CRYP_Infifo_afull_th = 2;
 
     if (mode == MBEDTLS_DES_ENCRYPT) {
-        DES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Encrypt;
+        DES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_ENCRYPT;
     } else {
-        DES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Decrypt;
+        DES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_DECRYPT;
     }
 
     /* Flush IN/OUT FIFO */
@@ -261,12 +261,12 @@ int mbedtls_des_crypt_ecb_mode( mbedtls_des_context *ctx,
     CRYP_Cmd(CRYP0, ENABLE);
 
 #if defined(MBEDTLS_DES_DMA_ALT)
-    CRYP_DMACmd(CRYP0, CRYP_DIEN, ENABLE);
+    CRYP_DMACmd(CRYP0, CRYP_RF_DMAEN_DIEN, ENABLE);
     UDMA_Cmd(CRYP0_TX_DMA_DMA_CH, ENABLE);
 
     /* Read the Output block from the Output FIFO */
-    while (CRYP0->CRYP_DOUT_CNT != 0) {
-        if (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE)) {
+    while (CRYP0->DOUT_CNT != 0) {
+        if (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE)) {
             *(uint32_t*)(pOut) = CRYP_DataOut(CRYP0);
             pOut += 4;
         }
@@ -274,7 +274,7 @@ int mbedtls_des_crypt_ecb_mode( mbedtls_des_context *ctx,
 
     /* Read the Done flag */
     do {
-        status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_DONE);
+        status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_DONE);
     } while (status == RESET);
 #else
     /* Write the Input block in the Input FIFO */
@@ -286,7 +286,7 @@ int mbedtls_des_crypt_ecb_mode( mbedtls_des_context *ctx,
     /* Wait until the complete message has been processed */
     counter = 0;
     do {
-        status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_BUSY);
+        status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_CORE_BUSY);
         counter++;
     } while ((counter != DES_BUSY_TIMEOUT) && (status != RESET));
 
@@ -329,10 +329,10 @@ int mbedtls_des3_crypt_ecb_mode( mbedtls_des_context *ctx,
     CRYP_Dma_Cfg(pIn, 8, 0);
 #endif
 
-    TDES_CRYP_InitStructure.CRYP_Algo = CRYP_Algo_TDES;
-    TDES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_AlgoMode_ECB;
-    TDES_CRYP_InitStructure.CRYP_DataType = CRYP_DataType_8b;
-    TDES_CRYP_InitStructure.CRYP_OdatType = CRYP_OdatType_8b;
+    TDES_CRYP_InitStructure.CRYP_Algo = CRYP_RF_CR_ALGO_TDES;
+    TDES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_RF_CR_ALGOMODE_ECB;
+    TDES_CRYP_InitStructure.CRYP_DataType = CRYP_RF_CR_IDATYPE_BYTE_SWAP;
+    TDES_CRYP_InitStructure.CRYP_OdatType = CRYP_RF_CR_ODATTYPE_BYTE_SWAP;
     TDES_CRYP_InitStructure.CRYP_Gcm_Ccmph = UNUSED;
 
     TDES_CRYP_InitStructure.CRYP_Dout_Cnt = 2;
@@ -344,9 +344,9 @@ int mbedtls_des3_crypt_ecb_mode( mbedtls_des_context *ctx,
     TDES_CRYP_InitStructure.CRYP_Infifo_afull_th = 2;
 
     if (mode == MBEDTLS_DES_ENCRYPT) {
-        TDES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Encrypt;
+        TDES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_ENCRYPT;
     } else {
-        TDES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Decrypt;
+        TDES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_DECRYPT;
     }
 
     /* Flush IN/OUT FIFO */
@@ -358,12 +358,12 @@ int mbedtls_des3_crypt_ecb_mode( mbedtls_des_context *ctx,
     CRYP_Cmd(CRYP0, ENABLE);
 
 #if defined(MBEDTLS_DES_DMA_ALT)
-    CRYP_DMACmd(CRYP0, CRYP_DIEN, ENABLE);
+    CRYP_DMACmd(CRYP0, CRYP_RF_DMAEN_DIEN, ENABLE);
     UDMA_Cmd(CRYP0_TX_DMA_DMA_CH, ENABLE);
 
     /* Read the Output block from the Output FIFO */
-    while (CRYP0->CRYP_DOUT_CNT != 0) {
-        if (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE)) {
+    while (CRYP0->DOUT_CNT != 0) {
+        if (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE)) {
             *(uint32_t*)(pOut) = CRYP_DataOut(CRYP0);
             pOut += 4;
         }
@@ -371,7 +371,7 @@ int mbedtls_des3_crypt_ecb_mode( mbedtls_des_context *ctx,
 
     /* Read the Done flag */
     do {
-        status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_DONE);
+        status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_DONE);
     } while (status == RESET);
 #else
 
@@ -384,7 +384,7 @@ int mbedtls_des3_crypt_ecb_mode( mbedtls_des_context *ctx,
     /* Wait until the complete message has been processed */
     counter = 0;
     do {
-        status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_BUSY);
+        status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_CORE_BUSY);
         counter++;
     } while ((counter != TDES_BUSY_TIMEOUT) && (status != RESET));
 
@@ -446,10 +446,10 @@ int mbedtls_des_crypt_cbc( mbedtls_des_context *ctx,
     memcpy(DES_CRYP_IVInitStructure.CRYP_IV1, IV, 8);
     CRYP_IVInit(CRYP0, &DES_CRYP_IVInitStructure);
 
-    DES_CRYP_InitStructure.CRYP_Algo = CRYP_Algo_DES;
-    DES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_AlgoMode_CBC;
-    DES_CRYP_InitStructure.CRYP_DataType = CRYP_DataType_8b;
-    DES_CRYP_InitStructure.CRYP_OdatType = CRYP_OdatType_8b;
+    DES_CRYP_InitStructure.CRYP_Algo = CRYP_RF_CR_ALGO_DES;
+    DES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_RF_CR_ALGOMODE_CBC;
+    DES_CRYP_InitStructure.CRYP_DataType = CRYP_RF_CR_IDATYPE_BYTE_SWAP;
+    DES_CRYP_InitStructure.CRYP_OdatType = CRYP_RF_CR_ODATTYPE_BYTE_SWAP;
     DES_CRYP_InitStructure.CRYP_Gcm_Ccmph = UNUSED;
 
     DES_CRYP_InitStructure.CRYP_Dout_Cnt = len / 4;
@@ -461,9 +461,9 @@ int mbedtls_des_crypt_cbc( mbedtls_des_context *ctx,
     DES_CRYP_InitStructure.CRYP_Infifo_afull_th = len / 4;
 
     if (mode == MBEDTLS_DES_ENCRYPT) {
-        DES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Encrypt;
+        DES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_ENCRYPT;
     } else {
-        DES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Decrypt;
+        DES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_DECRYPT;
         /* Refresh the iv value when the input length is 16 */
         if (length == 8) {
             memcpy((unsigned char *)iv, (unsigned char *)input, length);
@@ -479,12 +479,12 @@ int mbedtls_des_crypt_cbc( mbedtls_des_context *ctx,
     CRYP_Cmd(CRYP0, ENABLE);
 
 #if defined(MBEDTLS_DES_DMA_ALT)
-    CRYP_DMACmd(CRYP0, CRYP_DIEN, ENABLE);
+    CRYP_DMACmd(CRYP0, CRYP_RF_DMAEN_DIEN, ENABLE);
     UDMA_Cmd(CRYP0_TX_DMA_DMA_CH, ENABLE);
 
     /* Read the Output block from the Output FIFO */
-    while (CRYP0->CRYP_DOUT_CNT != 0) {
-        if (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE)) {
+    while (CRYP0->DOUT_CNT != 0) {
+        if (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE)) {
             *(uint32_t*)(pOut) = CRYP_DataOut(CRYP0);
             pOut += 4;
         }
@@ -492,7 +492,7 @@ int mbedtls_des_crypt_cbc( mbedtls_des_context *ctx,
 
     /* Read the Done flag */
     do {
-        status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_DONE);
+        status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_DONE);
     } while (status == RESET);
 #else
     for (i = 0; i < len; i += 8) {
@@ -505,7 +505,7 @@ int mbedtls_des_crypt_cbc( mbedtls_des_context *ctx,
         /* Wait until the complete message has been processed */
         counter = 0;
         do {
-            status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_BUSY);
+            status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_CORE_BUSY);
             counter++;
         } while ((counter != DES_BUSY_TIMEOUT) && (status != RESET));
 
@@ -573,10 +573,10 @@ int mbedtls_des3_crypt_cbc( mbedtls_des3_context *ctx,
     memcpy(TDES_CRYP_IVInitStructure.CRYP_IV1, IV, 8);
     CRYP_IVInit(CRYP0, &TDES_CRYP_IVInitStructure);
 
-    TDES_CRYP_InitStructure.CRYP_Algo = CRYP_Algo_TDES;
-    TDES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_AlgoMode_CBC;
-    TDES_CRYP_InitStructure.CRYP_DataType = CRYP_DataType_8b;
-    TDES_CRYP_InitStructure.CRYP_OdatType = CRYP_OdatType_8b;
+    TDES_CRYP_InitStructure.CRYP_Algo = CRYP_RF_CR_ALGO_TDES;
+    TDES_CRYP_InitStructure.CRYP_AlgoMode = CRYP_RF_CR_ALGOMODE_CBC;
+    TDES_CRYP_InitStructure.CRYP_DataType = CRYP_RF_CR_IDATYPE_BYTE_SWAP;
+    TDES_CRYP_InitStructure.CRYP_OdatType = CRYP_RF_CR_ODATTYPE_BYTE_SWAP;
     TDES_CRYP_InitStructure.CRYP_Gcm_Ccmph = UNUSED;
 
     TDES_CRYP_InitStructure.CRYP_Dout_Cnt = len / 4;
@@ -588,9 +588,9 @@ int mbedtls_des3_crypt_cbc( mbedtls_des3_context *ctx,
     TDES_CRYP_InitStructure.CRYP_Infifo_afull_th = len / 4;
 
     if (mode == MBEDTLS_DES_ENCRYPT) {
-        TDES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Encrypt;
+        TDES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_ENCRYPT;
     } else {
-        TDES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_AlgoDir_Decrypt;
+        TDES_CRYP_InitStructure.CRYP_AlgoDir = CRYP_RF_CR_ALGODIR_DECRYPT;
         /* Refresh the iv value when the input length is 8 */
         if (length == 8) {
             memcpy((unsigned char *)iv, (unsigned char *)input, length);
@@ -605,12 +605,12 @@ int mbedtls_des3_crypt_cbc( mbedtls_des3_context *ctx,
     CRYP_Cmd(CRYP0, ENABLE);
 
 #if defined(MBEDTLS_DES_DMA_ALT)
-    CRYP_DMACmd(CRYP0, CRYP_DIEN, ENABLE);
+    CRYP_DMACmd(CRYP0, CRYP_RF_DMAEN_DIEN, ENABLE);
     UDMA_Cmd(CRYP0_TX_DMA_DMA_CH, ENABLE);
 
     /* Read the Output block from the Output FIFO */
-    while (CRYP0->CRYP_DOUT_CNT != 0) {
-        if (CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_OFNE)) {
+    while (CRYP0->DOUT_CNT != 0) {
+        if (CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_OFNE)) {
             *(uint32_t*)(pOut) = CRYP_DataOut(CRYP0);
             pOut += 4;
         }
@@ -618,7 +618,7 @@ int mbedtls_des3_crypt_cbc( mbedtls_des3_context *ctx,
 
     /* Read the Done flag */
     do {
-        status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_DONE);
+        status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_DONE);
     } while (status == RESET);
 #else
     for (i = 0; i < len; i += 8) {
@@ -631,7 +631,7 @@ int mbedtls_des3_crypt_cbc( mbedtls_des3_context *ctx,
         /* Wait until the complete message has been processed */
         counter = 0;
         do {
-            status = CRYP_GetFlagStatus(CRYP0, CRYP_FLAG_BUSY);
+            status = CRYP_GetFlagStatus(CRYP0, CRYP_RF_SR_CORE_BUSY);
             counter++;
         } while ((counter != TDES_BUSY_TIMEOUT) && (status != RESET));
 

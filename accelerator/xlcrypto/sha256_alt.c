@@ -68,9 +68,9 @@ int mbedtls_internal_sha256_get_hmac_result(mbedtls_sha256_context *ctx, unsigne
     /* wait until the Busy flag is RESET */
     while((counter != MD_BUSY_TIMEOUT) && (ret == 0)) {
         counter++;
-        ret = HASH_GetITStatus(HASH0, HASH_IT_HASHDONE);
+        ret = HASH_GetITStatus(HASH0, HASH_RF_INT_STA_HSHINT);
     }
-    HASH_ClearITPendingBit(HASH0, HASH_IT_HASHDONE);
+    HASH_ClearITPendingBit(HASH0, HASH_RF_INT_STA_HSHINT);
 
     if(ret == 0) {
         return MD_TIMEOUT_ERR;
@@ -94,17 +94,17 @@ static int mbedtls_internal_sha256_process_dma_alt( mbedtls_sha256_context *ctx,
     uint8_t waitState = 1;
 
     if (hashHandleState == MD_HASH_DOWN) {
-        hashDownVal = HASH_IT_HASHDONE;
+        hashDownVal = HASH_RF_INT_STA_HSHINT;
     } else if (hashHandleState == MD_SEGMENT_DOWN){
-        hashDownVal = HASH_IT_SEGDONE;
+        hashDownVal = HASH_RF_INT_STA_SEGINT;
     } else if (hashHandleState == MD_OPAD) {
-        hashDownVal = HASH_IT_OPAD;
+        hashDownVal = HASH_RF_INT_STA_OPADINT;
     } else {
         waitState = 0;
     }
 
     /* HASH Interrupt Configuration */
-    HASH_ITConfig(HASH0, HASH_IT_TIMEOUT, DISABLE);
+    HASH_ITConfig(HASH0, HASH_RF_INT_STA_TOUTINT, DISABLE);
     /* HASH DMA Configuration */
     HASH_DMA_CFG((uint32_t *)data, (curlen % 4) ? curlen / 4 * 4 + 4 : curlen);
     /* Enable HASH */
@@ -144,17 +144,17 @@ static int mbedtls_internal_sha256_process_alt( mbedtls_sha256_context *ctx,
     uint8_t waitState = 1;
 
     if (hashHandleState == MD_HASH_DOWN) {
-        hashDownVal = HASH_IT_HASHDONE;
+        hashDownVal = HASH_RF_INT_STA_HSHINT;
     } else if (hashHandleState == MD_SEGMENT_DOWN){
-        hashDownVal = HASH_IT_SEGDONE;
+        hashDownVal = HASH_RF_INT_STA_SEGINT;
     } else if (hashHandleState == MD_OPAD) {
-        hashDownVal = HASH_IT_OPAD;
+        hashDownVal = HASH_RF_INT_STA_OPADINT;
     } else {
         waitState = 0;
     }
 
     /* HASH Interrupt Configuration */
-    HASH_ITConfig(HASH0, HASH_IT_TIMEOUT, DISABLE);
+    HASH_ITConfig(HASH0, HASH_RF_INT_STA_TOUTINT, DISABLE);
     /* Enable HASH */
     HASH_Cmd(HASH0, ENABLE);
 
@@ -168,12 +168,12 @@ static int mbedtls_internal_sha256_process_alt( mbedtls_sha256_context *ctx,
 
     for (uint32_t i = 0; i < len_for; i++) {
         while (ret == 0) {
-            ret = HASH_GetITStatus(HASH0, HASH_IT_FIFOWRQ);
+            ret = HASH_GetITStatus(HASH0, HASH_RF_INT_STA_FIFOREQINT);
         }
         HASH_DataIn(HASH0, *((uint32_t *)input));
         input += 4;
         ret = 0;
-        HASH_ClearITPendingBit(HASH0, HASH_IT_FIFOWRQ);
+        HASH_ClearITPendingBit(HASH0, HASH_RF_INT_STA_FIFOREQINT);
     }
 
     if (waitState == 1) {
@@ -206,7 +206,7 @@ static size_t mbedtls_internal_sha256_process_many_alt(
         len  -= SHA256_BLOCK_SIZE;
         processed += SHA256_BLOCK_SIZE;
         /* set Not First Segment */
-        HASH0->CTRL &= ~HASH_CR_FST_SEG;
+        HASH0->CTRL &= ~HASH_RF_CTRL_FST_SEG;
     }
     return( processed );
 }
@@ -225,7 +225,7 @@ static size_t mbedtls_internal_sha256_process_many_dma_alt(
         processed += blockNum;
         len -= blockNum;
         /* set Not First Segment */
-        HASH0->CTRL &= ~HASH_CR_FST_SEG;
+        HASH0->CTRL &= ~HASH_RF_CTRL_FST_SEG;
     }
     return( processed );
 }
@@ -265,25 +265,25 @@ int mbedtls_sha256_update_key( mbedtls_sha256_context *ctx,
             /* HASH Configuration */
         #if defined(MBEDTLS_SHA224_C)
             if( ctx->is224 == 0 ) {
-                HASH_InitStructure.HASH_AlgoSelection = HASH_AlgoSelection_SHA256;
+                HASH_InitStructure.HASH_AlgoSelection = HASH_RF_CTRL_ALGO_SHA_256;
             } else {
-                HASH_InitStructure.HASH_AlgoSelection = HASH_AlgoSelection_SHA224;
+                HASH_InitStructure.HASH_AlgoSelection = HASH_RF_CTRL_ALGO_SHA_224;
             }
         #else
             if( ctx->is224 == 0 ) {
-                HASH_InitStructure.HASH_AlgoSelection = HASH_AlgoSelection_SHA256;
+                HASH_InitStructure.HASH_AlgoSelection = HASH_RF_CTRL_ALGO_SHA_256;
             } else {
                 return MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
             }
         #endif
-            HASH_InitStructure.HASH_AlgoMode = HASH_AlgoMode_HMAC;
-            HASH_InitStructure.HASH_DataType = HASH_DataType_8b;
+            HASH_InitStructure.HASH_AlgoMode = HASH_RF_CTRL_MODE_HMAC;
+            HASH_InitStructure.HASH_DataType = HASH_RF_CTRL_DATATYPE_8_BIT_DATA_OR_BYTES;
             HASH_InitStructure.HASH_DmaEn = 0;
             HASH_InitStructure.HASH_TimeOut = MD_BUSY_TIMEOUT;
 
             /* HASH Frist segment Configuration */
             //hmac update key need configure first segment
-            HASH_InitStructure.HASH_First_Seg = HASH_CR_FST_SEG;
+            HASH_InitStructure.HASH_First_Seg = HASH_RF_CTRL_FST_SEG;
             HASH_InitStructure.HASH_Last_Seg = 0;
             /* HASH CurrLen Configuration */
             HASH_SegLenInitStruct.HASH_Seg_CurrLen = SHA256_BLOCK_SIZE;
@@ -332,26 +332,26 @@ int mbedtls_sha256_update( mbedtls_sha256_context *ctx,
     /* HASH Configuration */
 #if defined(MBEDTLS_SHA224_C)
     if( ctx->is224 == 0 ) {
-        HASH_InitStructure.HASH_AlgoSelection = HASH_AlgoSelection_SHA256;
+        HASH_InitStructure.HASH_AlgoSelection = HASH_RF_CTRL_ALGO_SHA_256;
     } else {
-        HASH_InitStructure.HASH_AlgoSelection = HASH_AlgoSelection_SHA224;
+        HASH_InitStructure.HASH_AlgoSelection = HASH_RF_CTRL_ALGO_SHA_224;
     }
 #else
     if( ctx->is224 == 0 ) {
-        HASH_InitStructure.HASH_AlgoSelection = HASH_AlgoSelection_SHA256;
+        HASH_InitStructure.HASH_AlgoSelection = HASH_RF_CTRL_ALGO_SHA_256;
     } else {
         return MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     }
 #endif
     if( hashAlgo == MD_HASH_ALGO ) {
-        HASH_InitStructure.HASH_AlgoMode = HASH_AlgoMode_HASH;
+        HASH_InitStructure.HASH_AlgoMode = HASH_RF_CTRL_MODE_HASH;
     } else {
-        HASH_InitStructure.HASH_AlgoMode = HASH_AlgoMode_HMAC;
+        HASH_InitStructure.HASH_AlgoMode = HASH_RF_CTRL_MODE_HMAC;
     }
 
-    HASH_InitStructure.HASH_DataType = HASH_DataType_8b;
+    HASH_InitStructure.HASH_DataType = HASH_RF_CTRL_DATATYPE_8_BIT_DATA_OR_BYTES;
 #if defined(MBEDTLS_SHA256_DMA_ALT)
-    HASH_InitStructure.HASH_DmaEn = HASH_CR_DMAEN;
+    HASH_InitStructure.HASH_DmaEn = HASH_RF_CTRL_DMAEN;
 #else
     HASH_InitStructure.HASH_DmaEn = 0;
 #endif
@@ -367,7 +367,7 @@ int mbedtls_sha256_update( mbedtls_sha256_context *ctx,
         if (!isFstConfiged) {
             isFstConfiged = 1;
             /* HASH Frist segment Configuration */
-            HASH_InitStructure.HASH_First_Seg = HASH_CR_FST_SEG;
+            HASH_InitStructure.HASH_First_Seg = HASH_RF_CTRL_FST_SEG;
             HASH_InitStructure.HASH_Last_Seg = 0;
             /* HASH CurrLen Configuration */
             HASH_SegLenInitStruct.HASH_Seg_CurrLen = SHA256_BLOCK_SIZE;
@@ -402,7 +402,7 @@ int mbedtls_sha256_update( mbedtls_sha256_context *ctx,
         if (!isFstConfiged) {
             isFstConfiged = 1;
             /* HASH Frist segment Configuration */
-            HASH_InitStructure.HASH_First_Seg = HASH_CR_FST_SEG;
+            HASH_InitStructure.HASH_First_Seg = HASH_RF_CTRL_FST_SEG;
             HASH_InitStructure.HASH_Last_Seg = 0;
             /* HASH CurrLen Configuration */
         #if defined(MBEDTLS_SHA256_DMA_ALT)
@@ -472,25 +472,25 @@ int mbedtls_sha256_finish( mbedtls_sha256_context *ctx,
     /* HASH Configuration */
 #if defined(MBEDTLS_SHA224_C)
     if( ctx->is224 == 0 ) {
-        HASH_InitStructure.HASH_AlgoSelection = HASH_AlgoSelection_SHA256;
+        HASH_InitStructure.HASH_AlgoSelection = HASH_RF_CTRL_ALGO_SHA_256;
     } else {
-        HASH_InitStructure.HASH_AlgoSelection = HASH_AlgoSelection_SHA224;
+        HASH_InitStructure.HASH_AlgoSelection = HASH_RF_CTRL_ALGO_SHA_224;
     }
 #else
     if( ctx->is224 == 0 ) {
-        HASH_InitStructure.HASH_AlgoSelection = HASH_AlgoSelection_SHA256;
+        HASH_InitStructure.HASH_AlgoSelection = HASH_RF_CTRL_ALGO_SHA_256;
     } else {
         return MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     }
 #endif
     if( hashAlgo == MD_HASH_ALGO ) {
-        HASH_InitStructure.HASH_AlgoMode = HASH_AlgoMode_HASH;
+        HASH_InitStructure.HASH_AlgoMode = HASH_RF_CTRL_MODE_HASH;
     } else {
-        HASH_InitStructure.HASH_AlgoMode = HASH_AlgoMode_HMAC;
+        HASH_InitStructure.HASH_AlgoMode = HASH_RF_CTRL_MODE_HMAC;
     }
-    HASH_InitStructure.HASH_DataType = HASH_DataType_8b;
+    HASH_InitStructure.HASH_DataType = HASH_RF_CTRL_DATATYPE_8_BIT_DATA_OR_BYTES;
 #if defined(MBEDTLS_SHA256_DMA_ALT)
-    HASH_InitStructure.HASH_DmaEn = HASH_CR_DMAEN;
+    HASH_InitStructure.HASH_DmaEn = HASH_RF_CTRL_DMAEN;
 #else
     HASH_InitStructure.HASH_DmaEn = 0;
 #endif
@@ -508,15 +508,15 @@ int mbedtls_sha256_finish( mbedtls_sha256_context *ctx,
 
     if (!isFstConfiged) {
         /* HASH Last segment Configuration */
-        HASH_InitStructure.HASH_First_Seg = HASH_CR_FST_SEG;
-        HASH_InitStructure.HASH_Last_Seg = HASH_CR_LST_SEG;
+        HASH_InitStructure.HASH_First_Seg = HASH_RF_CTRL_FST_SEG;
+        HASH_InitStructure.HASH_Last_Seg = HASH_RF_CTRL_LAST;
         HASH_Ip_Init(HASH0);
         HASH_Init(HASH0, &HASH_InitStructure);
         HASH_SegLenInit(HASH0, &HASH_InitStructure, &HASH_SegLenInitStruct);
     } else {
         /* HASH Last segment Configuration */
         HASH_InitStructure.HASH_First_Seg = 0;
-        HASH_InitStructure.HASH_Last_Seg = HASH_CR_LST_SEG;
+        HASH_InitStructure.HASH_Last_Seg = HASH_RF_CTRL_LAST;
         HASH_Ip_Init(HASH0);
         HASH_Init(HASH0, &HASH_InitStructure);
         HASH_SegLenInit(HASH0, &HASH_InitStructure, &HASH_SegLenInitStruct);
