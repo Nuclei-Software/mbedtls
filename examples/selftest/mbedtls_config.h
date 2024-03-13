@@ -34,7 +34,9 @@
  * It is recommended that you use "acc_config.h" macros to enable hardware acceleration
  * instead of defining another macro in "mbedtls_config.h".
  */
+#ifdef MBEDTLS_ACC
 #include "acc_config.h"
+#endif
 
 /**
  * This is an optional version symbol that enables compatibility handling of
