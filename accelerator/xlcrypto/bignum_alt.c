@@ -745,6 +745,7 @@ cleanup:
     return( ret );
 }
 
+#if defined(MBEDTLS_ACC_XLCRYPTO_ACRYP_ENABLE)
 int mbedtls_mpi_self_test_alt( int verbose )
 {
     int ret = 0;
@@ -757,5 +758,6 @@ int mbedtls_mpi_self_test_alt( int verbose )
     return 0;
 }
 #endif
+#endif /* MBEDTLS_SELF_TEST */
 
 #endif /* MBEDTLS_BIGNUM_C */

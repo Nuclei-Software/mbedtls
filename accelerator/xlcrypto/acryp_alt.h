@@ -23,6 +23,5 @@
 #define MONTMULT_Q_MODULUS          2
 
 int mbedtls_mpi_self_test_alt( int verbose );
-int mbedtls_rsa8192_self_test( int verbose );
 
 #endif

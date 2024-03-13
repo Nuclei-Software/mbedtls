@@ -18,7 +18,6 @@
 #ifndef MBEDTLS_ACC_CONFIG_H
 #define MBEDTLS_ACC_CONFIG_H
 
-
 /* Enable the Nuclei crypto IP exist macro based on whether SOC have
  * corresponding crypto IP (HASH, CRYP, ACRYP).
  */

@@ -22,8 +22,9 @@
 #define MBEDTLS_ALLOW_PRIVATE_ACCESS
 
 #include "mbedtls/build_info.h"
-
+#ifdef MBEDTLS_ACC_XLCRYPTO_ACRYP_ENABLE
 #include "acryp_alt.h"
+#endif
 #include "mbedtls/entropy.h"
 #include "mbedtls/hmac_drbg.h"
 #include "mbedtls/ctr_drbg.h"
@@ -273,7 +274,7 @@ const selftest_t selftests[] =
 #if defined(MBEDTLS_CCM_C) && defined(MBEDTLS_AES_C)
     {"ccm", mbedtls_ccm_self_test},
 #endif
-#if defined(MBEDTLS_BIGNUM_C)
+#if defined(MBEDTLS_BIGNUM_C) && defined(MBEDTLS_ACC_XLCRYPTO_ACRYP_ENABLE)
     {"mpi", mbedtls_mpi_self_test_alt},
 #endif
 #if defined(MBEDTLS_RSA_C)

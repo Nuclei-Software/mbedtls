@@ -41,7 +41,9 @@
 
 #if defined(MBEDTLS_RSA_C)
 
+#ifdef MBEDTLS_ACC_XLCRYPTO_ACRYP_ENABLE
 #include "acryp_alt.h"
+#endif
 #include "mbedtls/rsa.h"
 #include "rsa_alt_helpers.h"
 #include "mbedtls/oid.h"
@@ -2446,6 +2448,350 @@ int mbedtls_rsa_self_test( int verbose )
 
     if( verbose != 0 )
         mbedtls_printf( "  RSA key validation: " );
+
+    if( mbedtls_rsa_check_pubkey(  &rsa ) != 0 ||
+        mbedtls_rsa_check_privkey( &rsa ) != 0 )
+    {
+        if( verbose != 0 )
+            mbedtls_printf( "failed\n" );
+
+        ret = 1;
+        goto cleanup;
+    }
+
+    if( verbose != 0 )
+        mbedtls_printf( "passed\n  PKCS#1 encryption : " );
+
+    memcpy( rsa_plaintext, RSA_PT, PT_LEN );
+
+    if( mbedtls_rsa_pkcs1_encrypt( &rsa, myrand, NULL,
+                                   PT_LEN, rsa_plaintext,
+                                   rsa_ciphertext ) != 0 )
+    {
+        if( verbose != 0 )
+            mbedtls_printf( "failed\n" );
+
+        ret = 1;
+        goto cleanup;
+    }
+
+    if( verbose != 0 )
+        mbedtls_printf( "passed\n  PKCS#1 decryption : " );
+
+    if( mbedtls_rsa_pkcs1_decrypt( &rsa, myrand, NULL,
+                                   &len, rsa_ciphertext, rsa_decrypted,
+                                   sizeof(rsa_decrypted) ) != 0 )
+    {
+        if( verbose != 0 )
+            mbedtls_printf( "failed\n" );
+
+        ret = 1;
+        goto cleanup;
+    }
+
+    if( memcmp( rsa_decrypted, rsa_plaintext, len ) != 0 )
+    {
+        if( verbose != 0 )
+            mbedtls_printf( "failed\n" );
+
+        ret = 1;
+        goto cleanup;
+    }
+
+    if( verbose != 0 )
+        mbedtls_printf( "passed\n" );
+
+#if defined(MBEDTLS_SHA1_C)
+    if( verbose != 0 )
+        mbedtls_printf( "  PKCS#1 data sign  : " );
+
+    if( mbedtls_sha1( rsa_plaintext, PT_LEN, sha1sum ) != 0 )
+    {
+        if( verbose != 0 )
+            mbedtls_printf( "failed\n" );
+
+        return( 1 );
+    }
+
+    if( mbedtls_rsa_pkcs1_sign( &rsa, myrand, NULL,
+                                MBEDTLS_MD_SHA1, 20,
+                                sha1sum, rsa_ciphertext ) != 0 )
+    {
+        if( verbose != 0 )
+            mbedtls_printf( "failed\n" );
+
+        ret = 1;
+        goto cleanup;
+    }
+
+    if( verbose != 0 )
+        mbedtls_printf( "passed\n  PKCS#1 sig. verify: " );
+
+    if( mbedtls_rsa_pkcs1_verify( &rsa, MBEDTLS_MD_SHA1, 20,
+                                  sha1sum, rsa_ciphertext ) != 0 )
+    {
+        if( verbose != 0 )
+            mbedtls_printf( "failed\n" );
+
+        ret = 1;
+        goto cleanup;
+    }
+
+    if( verbose != 0 )
+        mbedtls_printf( "passed\n" );
+#endif /* MBEDTLS_SHA1_C */
+
+    if( verbose != 0 )
+        mbedtls_printf( "\n" );
+
+cleanup:
+    mbedtls_mpi_free( &K );
+    mbedtls_rsa_free( &rsa );
+#else /* MBEDTLS_PKCS1_V15 */
+    ((void) verbose);
+#endif /* MBEDTLS_PKCS1_V15 */
+    return( ret );
+}
+
+#define KEY_LEN_RSA_8192 1024
+
+#define RSA_N_RSA_8192  "ceb90313a5c86992c73ca390b3d341e0" \
+                        "c058a9bf07d83ff85c6fcc5ea384c7dc" \
+                        "ec2a358846041d402b82527a74c6b203" \
+                        "3b16f4437fb9f99963d2bb42d5316ecc" \
+                        "7248f28e8cb02269a0c495162519437b" \
+                        "e9efe00bd98ed395833a2978c5869c84" \
+                        "0dacd64cdd53d6ef030bfd148f8a8915" \
+                        "e9999b2145c7678c3e029ec690c3ff44" \
+                        "ed3c07319327799e07e9fe166dd463f8" \
+                        "67f4f657e1111ad7e4c7f3680a421ffb" \
+                        "f9ee88734fb6dc32346e1e5d55d89180" \
+                        "9aee1ce3a366999a8213435a96d914cd" \
+                        "23d2d9840264e3b70cfe778427ee9b35" \
+                        "4f4fec4bf153712c6394972d716cf0af" \
+                        "c3a717e1636a657204fd6e960eace32a" \
+                        "c8823f365d22d34e09d93fa1a15a17bb" \
+                        "e0e104fb094ed80c56f0c33b69d4371a" \
+                        "6b316f48c83d88818dac16cc8b5aea93" \
+                        "834c7ea2200089a0a4a74ef78bd8a03c" \
+                        "0b8463cbd16910cacec4faa685bb9ea0" \
+                        "ccb09cac38ad737c9128ceb02497c179" \
+                        "4cdc30cc19f9c9fb3934c28c2b4faddb" \
+                        "62d4e8ae5981817b8a9c16304890cf57" \
+                        "0f5a4e74d753f028c066093c4405d9b0" \
+                        "f2646949882b7b4086b52d3bffdb26ee" \
+                        "43de0a7615fdf7b1f84c33a22c1a4fd2" \
+                        "7914d47af9c1d311221c83ee2a455f34" \
+                        "1cda47b5c5da5ac2c52656e278f6cdad" \
+                        "851f5e033354e414467673cab99cc6cd" \
+                        "f2d6c2a7ccce75a1c016cf19ebed38f5" \
+                        "6defcd1691578182250d6ea53075010d" \
+                        "96673b34d4bd7ad38c3657b37a619144" \
+                        "80671006f4676dcb64f114d8ee6dfb25" \
+                        "4638261c1fc118708442f28eea48278b" \
+                        "82370d36b74bd4dab800ee28e051160d" \
+                        "27a978bd31751a80f265460491433fb4" \
+                        "cea3a417382dc902f36a9755ab76ad17" \
+                        "3f0bc269376bd137b9b91b1d545f665b" \
+                        "5f0aeb4dcfba0e34b963913808082392" \
+                        "173a577b3768b6ee74c6cceade5d5cf6" \
+                        "13326ffab676561f5cdcbd56c1494ab4" \
+                        "7623c56605540d3d242112fe7f21e20a" \
+                        "c717cadf62991047c77ee53273031518" \
+                        "0d619584e65beed238a16237db1ea72d" \
+                        "c0a1ed38552dd62eb06fc6a50cc3f88c" \
+                        "2d1ecc5bea07730554ae25309d84797e" \
+                        "4d0bbda84a74259ab084a81b53243549" \
+                        "ba929c1d57d4d2062c4f1e818374eb8c" \
+                        "ae7bdce2c36807a059eb29a75aef0645" \
+                        "5fb2e7c3e81139bfc6b6642b9d05e59d" \
+                        "82f2843ce3e1feac23a54105722b78c5" \
+                        "6aaa3bb44298c64550fb528952eee1bd" \
+                        "e4ff5db70d23635d4d32eae3d30f0e88" \
+                        "2bad20f837c5569be93c345a6592b3d5" \
+                        "7f3110e0cc3b45b4a8e993f4a884b183" \
+                        "af8c8612c1b491ec43d369237992157c" \
+                        "3169a121b2944efa97fa41ef49d7445e" \
+                        "3fcc5c09319adba8ae417a7a9066f9ef" \
+                        "a278f4afa5c8e8554aae1b5c37f58ab8" \
+                        "cc8a18e62d42d8415261e4eb8ff55a9d" \
+                        "0fd6289ef8907774755129de21e62425" \
+                        "8a342b45cab5d59121097e8883e632d4" \
+                        "f922b627c433e7f642b24c8df7b1d00b" \
+                        "f95152915f4af4933c4ca9e1f110fd49"
+
+#define RSA_D_RSA_8192  "097343c4be2b6f481a7b972ea249e215" \
+                        "1835f56c9a3b349172085a5b693644bc" \
+                        "c0bf1d3b6198068e4c6ee4be5c6048fb" \
+                        "04d483ce2224aa586ccbd16bb8bb4dc9" \
+                        "62e01ad6916febe2d04aac561ad410d5" \
+                        "b55815f1f4bc26c80afbb9b19fb60ba9" \
+                        "adc65cf59e989a96ca98ddb4f6eaea61" \
+                        "6a106f9b11c98fde45677142ba937b33" \
+                        "f7746b0fc51e64dce897b5d9e8a370fe" \
+                        "862218b0e3c518690e3865d437c3d61a" \
+                        "7ace80c664ba834e783f207c3bd46eb2" \
+                        "6662c44753ccf8f0ab499e26a206c280" \
+                        "ae4691530b98f920012410eaa5b8aeb7" \
+                        "bd2c762cf29751f1298c3d6d02666c8a" \
+                        "5c73631016af627bd7e68e0ba618193a" \
+                        "77781cd3ab66502a9d20a55c0a384825" \
+                        "7a9e4ecffb18f39f7cc9fce2d66fb125" \
+                        "30094e8111465edb2d52d4a7fd26e6da" \
+                        "5f823bb7c5a6c0a3eb630aa51e6b84c7" \
+                        "b9ef0f70dddde3baa1c137842d50ea6b" \
+                        "876ffb79940db9ddd3f4fd9de7ce5835" \
+                        "e76199897b1684394be031949ed641a8" \
+                        "69d839dade94a10ab8c771ec3b250395" \
+                        "834a299405d3fc82a06909bb0b9108e6" \
+                        "a1ee1d32135b8982e5a59aafc77e8945" \
+                        "132d2f653e9421a2ad2b2ea1174b0ca3" \
+                        "1e8de938c5fa2a5ffa233b94c3b1f02c" \
+                        "3db56cd9ce75b0f87e72c63e0c319c2d" \
+                        "768c7c8bc0e8fc9440b4618ebef57fd1" \
+                        "226cd6f13cd7a361059b0554b6085e36" \
+                        "3a146057cbc528527ec7226bc2cf5680" \
+                        "fc83339db2ac06d56cef7f0ae1695c6e" \
+                        "a43716ef6fa4d0c115930f6e6e00245c" \
+                        "7779359ceee2bd7b7f7ed5a4aa2341a8" \
+                        "fea503aece339c0ee7183b0cd0a7396a" \
+                        "4b24ee1af7a186dd7e26fe6ea2f66408" \
+                        "1a9342d48fe090369797f559c4036cb7" \
+                        "bfdceef8f3c8764583438997bb52f753" \
+                        "b9f8ad2339dcd358d1fb49c8359b8824" \
+                        "1b958eba852e576d05db8a6e12be2431" \
+                        "834c2c5a680beaa45cf8ed8876c852c0" \
+                        "70ea1551c071a85f6a3d84a90971392d" \
+                        "d6de945f688f60ab56b408863bd59804" \
+                        "f0ce0b2e95f7268b508f94be7c129b3a" \
+                        "55cedcad067c31dfe5a634490d05c1bf" \
+                        "81d5560caee93a18d51b24a694f2c77c" \
+                        "85038bcf9accc7703a85cc06bf7f6ebb" \
+                        "ca7e043db81decc0d67762890daf296f" \
+                        "87d7f85e44de4145b26369068d506a55" \
+                        "4fabd2d6c76211123f5a5eaccfc01921" \
+                        "7bf63d1136137241bd8c63a225977130" \
+                        "e831cd0bec3c19f9e51c025f98601bba" \
+                        "b68e6ad589e3762d0f2ae7ba3a41452f" \
+                        "81a3df5c0fc338e32648e13ad8bb0f26" \
+                        "4ff4a03b7508d4ce6be7fd87bb2313f2" \
+                        "4b33f83ae23d559503f2d8d23fab081d" \
+                        "a9900a4457241c6a5d9d9810582adc59" \
+                        "6eb4b44c863a1f5d5f92cc2d98156a00" \
+                        "e5d69341d493257637ec1e460e2a54ce" \
+                        "ceda3ac6a5317c5cf773c744a69ed5f8" \
+                        "6f21f2d44be309a7ac5116ffad13039c" \
+                        "cc0e6b7c12f13158f0fefd167ba05906" \
+                        "b9b348e9959d45d133de96c43c59556c" \
+                        "ee83a7fe87cc0a38ba4e34c9c00f5341"
+
+#define RSA_P_RSA_8192  "E91E42639F1E0C653EE2FB44337DFB23"  \
+                        "7C75F41CA43692362E2DA8DAF3657166"  \
+                        "EB6ADABAF4DE1783EC6F57039E098822"  \
+                        "4D512C16A98A14E228B518D060D1FCD3"  \
+                        "E00B92524A62227252EF55FD455E54FE"  \
+                        "67A3602AD4DC5484072EDB9580E7A68F"  \
+                        "8874B494C06DFBF01020C67D40CA711F"  \
+                        "C6D1ABE5BCFE29051B8EE10C2B8F6EAC"  \
+                        "3CC6A732D3CBD35F83DA2D66C6480AE7"  \
+                        "2A3E55B057009CB9886D76502C01B370"  \
+                        "D4357F322AAC8BD64CD4241BC88DCDED"  \
+                        "940E2342FAF2A177230F334D4CEEB98F"  \
+                        "83062B525AFFDFED3E08E2604AA9AD6E"  \
+                        "EF0ECC92655B4E8B81047CFF277318DE"  \
+                        "009AB16402B5A213FF652B14144D711D"  \
+                        "ABEC4480A52E6E06EBD6FE2431C11A95"  \
+                        "CF63D1CA912C766203AB404BDB8C8F8B"  \
+                        "F828E22C646CB075D56EC5920568BEBD"  \
+                        "19622EA3225FAC10546D9708A8D7FB3D"  \
+                        "EBC7DE816DB6677E33127E33984FAEF9"  \
+                        "5471C995251CC1AF33B71EC12CA4A69D"  \
+                        "88CD05B9403F21326F85F3247DE36072"  \
+                        "4AC3F67CB5EF0392A1AFA86C80FCCC83"  \
+                        "428C0989B7168256847897FCB7DB0618"  \
+                        "1EF31701D85AFC5666BC5ED07E1C3C5A"  \
+                        "0238B2096026BE35F86CDA2F48125E39"  \
+                        "B3FDE1753674DD6FA386E83FFF296121"  \
+                        "26E6BE88053660EA65DE8E45765094FF"  \
+                        "4105C5BF7B76C1ED9D66EE5D0A0CFB0C"  \
+                        "282F86DD0D5A87AEBD8560373C14D189"  \
+                        "D570BDA8376B60632050DE3C23A0D72D"  \
+                        "91AD725865B947B8DC8D6FA299A8A66D"
+
+#define RSA_Q_RSA_8192  "E3037E208CA28DAB5535A958CB77258D"  \
+                        "408ED58827D4A93DABAC42E8F5DDF197"  \
+                        "BEF50354F9EF15A5D2230260C16BF2F5"  \
+                        "0F0BF94343849D1DD8AF716C1F9B6322"  \
+                        "ACAED963A1237B925A325F9E01D96478"  \
+                        "D5A3F45E4718B5F42A1392FD52B97CEA"  \
+                        "D4806A5764BD71251A6241B7121D6B62"  \
+                        "9D82CA5698C3069E0B958C07F468DA27"  \
+                        "04C2A0E9B0397D99422BB463D1EC44DD"  \
+                        "0C1B97078F460A3A3DF8BF533AAA61F3"  \
+                        "26CCD3E16EB6C05DB58225B8FC291250"  \
+                        "57935CABC6B108C98F0020B9F39AF7CA"  \
+                        "95B00D717FB6FD1565938030239D4DBD"  \
+                        "93C78CC604AE1B69D4B0AF392F8B0467"  \
+                        "2D554AE2FD338E6095F2D687CC7EBC60"  \
+                        "96870180FB7B403707B696960991076B"  \
+                        "A76CC9F6986201B23B7ED9CF2A068D7A"  \
+                        "00904D252AB48FC1884C3B359524C44E"  \
+                        "600474689C8A27C899B7646337EE1540"  \
+                        "F7FCEAE4CB4FE545A82BDD41541C48BE"  \
+                        "37975F28AE2D970A448D52B41532BDFB"  \
+                        "24776EFD6B1C32D11BB7A9D246E19435"  \
+                        "D2C3E6C61283788A8E06DEE8D2DE720B"  \
+                        "180B78DFA51662C7DC13A8BA06A5A5B8"  \
+                        "0240E4AA7F9C7AC2C7A1E34BE4684632"  \
+                        "767916ECCDCF3C980E56DE7759D8B3C7"  \
+                        "B7D6EC3ACA80A495E5D7B789E60D30AC"  \
+                        "2EF2D9C7C59A2CF6369E1B7B8E9450C9"  \
+                        "766DC888C8B154E91C352489F932FE0C"  \
+                        "C3D632B8DA4CECA24620D25089331371"  \
+                        "DED2E6A6A3C7E503705388BCE2498EB8"  \
+                        "78ADEA4A1508C97F69BFFD12271F98CD"
+
+/*
+ * Checkup routine
+ */
+int mbedtls_rsa8192_self_test( int verbose )
+{
+    int ret = 0;
+#if defined(MBEDTLS_PKCS1_V15)
+    size_t len;
+    mbedtls_rsa_context rsa;
+    unsigned char rsa_plaintext[PT_LEN];
+    unsigned char rsa_decrypted[PT_LEN];
+    unsigned char rsa_ciphertext[KEY_LEN_RSA_8192];
+#if defined(MBEDTLS_SHA1_C)
+    unsigned char sha1sum[20];
+#endif
+
+    mbedtls_mpi K;
+
+    mbedtls_mpi_init( &K );
+    mbedtls_rsa_init( &rsa );
+
+    MBEDTLS_MPI_CHK( mbedtls_mpi_read_string( &K, 16, RSA_N_RSA_8192  ) );
+    MBEDTLS_MPI_CHK( mbedtls_rsa_import( &rsa, &K, NULL, NULL, NULL, NULL ) );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_read_string( &K, 16, RSA_P_RSA_8192  ) );
+    MBEDTLS_MPI_CHK( mbedtls_rsa_import( &rsa, NULL, &K, NULL, NULL, NULL ) );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_read_string( &K, 16, RSA_Q_RSA_8192  ) );
+    MBEDTLS_MPI_CHK( mbedtls_rsa_import( &rsa, NULL, NULL, &K, NULL, NULL ) );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_read_string( &K, 16, RSA_D_RSA_8192  ) );
+    MBEDTLS_MPI_CHK( mbedtls_rsa_import( &rsa, NULL, NULL, NULL, &K, NULL ) );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_read_string( &K, 16, RSA_E  ) );
+    MBEDTLS_MPI_CHK( mbedtls_rsa_import( &rsa, NULL, NULL, NULL, NULL, &K ) );
+
+#if defined(MBEDTLS_RSA_BACKGROUND_ALT)
+    /* hardware mexp/montmult background prepare */
+    MBEDTLS_MPI_CHK( mpi_mont_config(&rsa.N, &rsa.P, &rsa.Q) );
+#endif
+
+    MBEDTLS_MPI_CHK( mbedtls_rsa_complete( &rsa ) );
+
+    if( verbose != 0 )
+        mbedtls_printf( "  RSA8192 key validation: " );
 
     if( mbedtls_rsa_check_pubkey(  &rsa ) != 0 ||
         mbedtls_rsa_check_privkey( &rsa ) != 0 )

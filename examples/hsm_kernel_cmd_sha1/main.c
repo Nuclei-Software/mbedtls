@@ -1,6 +1,9 @@
 #include <stdio.h>
-#include "ns_libopt.h"
 #include "mbedtls/sha1.h"
+
+// #define HSM_SOC
+#ifdef HSM_SOC
+#include "ns_libopt.h"
 
 #define TIMEOUT_CYCLE           0x1fffff
 #define MAILBOX_NUM             0
@@ -159,3 +162,10 @@ int main(void)
 
     return 0;
 }
+#else
+int main(void)
+{
+    printf("hsm_kernel_cmd_sha1 is only applicable to the SoC of the HSM subsystem that uses Mailbox IP!");
+    return 0;
+}
+#endif

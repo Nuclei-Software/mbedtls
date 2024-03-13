@@ -1119,6 +1119,8 @@ void mbedtls_rsa_free( mbedtls_rsa_context *ctx );
  */
 int mbedtls_rsa_self_test( int verbose );
 
+int mbedtls_rsa8192_self_test( int verbose );
+
 #endif /* MBEDTLS_SELF_TEST */
 
 #ifdef __cplusplus
