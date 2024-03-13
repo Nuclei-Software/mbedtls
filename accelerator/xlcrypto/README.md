@@ -55,13 +55,13 @@ The features of Nuclei Mbed TLS are listed below:
 
 - **Note** that the original configuration file `include/mbedtls/mbedtls_config.h` has been moved to `examples/xxx/mbedtls_config.h`. Each example has its own `mbedtls_config.h` so that user can configure it more flexibly.
 
-- Each `examples/xxx/mbedtls_config.h` includes its own `acc_config.h` which describes Nuclei hardware accelerators macros. You can enable the expected hardware acceleration macros in `examples/xxx/acc_config.h` to enable hardware implement in `accelerator/xlcrypto/xxx_alt.c`, or disable it thus turning to software implement in `library/xxx.c`. For detailed information about hardware acceleration macros, please refer to `examples/xxx/acc_config.h`. The macros are as follows:
+- Each `examples/xxx/mbedtls_config.h` includes its own `acc_xlcrypto_config.h` which describes Nuclei hardware accelerators macros. You can enable the expected hardware acceleration macros in `examples/xxx/acc_xlcrypto_config.h` to enable hardware implement in `accelerator/xlcrypto/xxx_alt.c`, or disable it thus turning to software implement in `library/xxx.c`. For detailed information about hardware acceleration macros, please refer to `examples/xxx/acc_xlcrypto_config.h`. The macros are as follows:
 
 ~~~console
 ├── crypto IP exist macro
-│   ├── MBEDTLS_HASH_ENABLE                                 //HASH IP exist macro
-│   ├── MBEDTLS_CRYP_ENABLE                                 //CRYP IP exist macro
-│   └── MBEDTLS_ACRYP_ENABLE                                //ACRYP IP exist macro
+│   ├── MBEDTLS_ACC_XLCRYPTO_HASH_ENABLE                    //HASH IP exist macro
+│   ├── MBEDTLS_ACC_XLCRYPTO_CRYP_ENABLE                    //CRYP IP exist macro
+│   └── MBEDTLS_ACC_XLCRYPTO_ACRYP_ENABLE                   //ACRYP IP exist macro
 ├── HASH
 │   ├── MBEDTLS_MD5_UPDATE_ALT                              //MD5 update data phase
 │   ├── MBEDTLS_MD5_FINISH_ALT                              //MD5 finish phase
@@ -121,7 +121,7 @@ The features of Nuclei Mbed TLS are listed below:
 │   └── MBEDTLS_HMAC_REMBEDTLS_MUL_MONTGOMERY_ALTSET_ALT    //ACRYP ECC montgomery OP_MMCURVE
 ~~~
 
-- **HASH** and **CRYP** have the option of further acceleration using **UDMA** while SoC have **UDMA** IP. User can use **UDMA**-related macros in `examples/xxx/acc_config.h` to speed up **HASH** or **CRYP** execution, the macros are as follows:
+- **HASH** and **CRYP** have the option of further acceleration using **UDMA** while SoC have **UDMA** IP. User can use **UDMA**-related macros in `examples/xxx/acc_xlcrypto_config.h` to speed up **HASH** or **CRYP** execution, the macros are as follows:
 
 ~~~console
 ├── UDMA-HASH/HMAC
@@ -140,7 +140,7 @@ The features of Nuclei Mbed TLS are listed below:
 
 1. Go to `examples/xxx/mbedtls_config.h` to configure mbedtls original configuration macros.
 
-2. Go to `examples/xxx/acc_config.h` to configure hardware accelerators macros. Firstly you should enable the crypto IP exist macro based on whether SoC have corresponding crypto IP. For example, If the SoC only has the **HASH** configured but not **CRYP** and **ACRYP** configured, you should only enable **MBEDTLS_HASH_ENABLE** and disable **MBEDTLS_CRYP_ENABLE** and **MBEDTLS_ACRYP_ENABLE**. Then you need to enable all your HASH-Algorithm-related macros:
+2. Go to `examples/xxx/acc_xlcrypto_config.h` to configure hardware accelerators macros. Firstly you should enable the crypto IP exist macro based on whether SoC have corresponding crypto IP. For example, If the SoC only has the **HASH** configured but not **CRYP** and **ACRYP** configured, you should only enable **MBEDTLS_ACC_XLCRYPTO_HASH_ENABLE** and disable **MBEDTLS_ACC_XLCRYPTO_CRYP_ENABLE** and **MBEDTLS_ACC_XLCRYPTO_ACRYP_ENABLE**. Then you need to enable all your HASH-Algorithm-related macros:
 
    - if you want to accelerate HASH SHA512 using **HASH** engine, you should enable HASH-SHA512-related macros:
 
@@ -180,7 +180,7 @@ The features of Nuclei Mbed TLS are listed below:
 
    - cd *Components/mbedtls/examples/xxx*
 
-   - configure `mbedtls_config.h` and `acc_config.h`.
+   - configure `mbedtls_config.h` and `acc_xlcrypto_config.h`.
 
    - If you want to build your application, you can easily run this command:
 
