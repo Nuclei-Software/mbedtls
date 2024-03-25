@@ -49,7 +49,8 @@ int main( void )
 #include "mbedtls/sha1.h"
 #include "mbedtls/sha256.h"
 #include "mbedtls/sha512.h"
-
+#include "mbedtls/sm3.h"
+#include "mbedtls/sm4.h"
 #include "mbedtls/des.h"
 #include "mbedtls/aes.h"
 #include "mbedtls/aria.h"
@@ -166,7 +167,7 @@ do {                                                                    \
     {                                                                   \
         tsc_end = __get_rv_cycle();                                     \
         mbedtls_printf( "%llu KiB/s, %llu cycles/byte\n",               \
-                         ( jj * BUFSIZE ) / (( tsc_end - tsc ) / SystemCoreClock ) / 1024,            \
+                         ( jj * BUFSIZE ) * SystemCoreClock / (( tsc_end - tsc ) * 1024 ) ,            \
                          ( tsc_end - tsc )                              \
                          / ( jj * BUFSIZE ) );                          \
     }                                                                   \
@@ -519,7 +520,7 @@ static int set_ecp_curve( const char *string, mbedtls_ecp_curve_info *curve )
 unsigned char buf[BUFSIZE];
 
 typedef struct {
-    char md5, ripemd160, sha1, sha256, sha512,
+    char md5, ripemd160, sha1, sha256, sha512, sm3, sm4,
          des3, des,
          aes_cbc, aes_gcm, aes_ccm, aes_xts, chachapoly,
          aes_cmac, des3_cmac,
@@ -571,6 +572,10 @@ int main( int argc, char *argv[] )
                 todo.sha256 = 1;
             else if( strcmp( argv[i], "sha512" ) == 0 )
                 todo.sha512 = 1;
+            else if( strcmp( argv[i], "sm3" ) == 0 )
+                todo.sm3 = 1;
+            else if( strcmp( argv[i], "sm4" ) == 0 )
+                todo.sm4 = 1;
             else if( strcmp( argv[i], "des3" ) == 0 )
                 todo.des3 = 1;
             else if( strcmp( argv[i], "des" ) == 0 )
@@ -651,6 +656,34 @@ int main( int argc, char *argv[] )
 #if defined(MBEDTLS_SHA512_C)
     if( todo.sha512 )
         TIME_AND_TSC( "SHA-512", mbedtls_sha512( buf, BUFSIZE, tmp, 0 ) );
+#endif
+
+#if defined(MBEDTLS_SM3_C)
+    if( todo.sm3 )
+        TIME_AND_TSC( "SM3", mbedtls_sm3_ret( buf, BUFSIZE, tmp ); );
+#endif
+
+#if defined(MBEDTLS_SM4_C)
+#if defined(MBEDTLS_CIPHER_MODE_CBC)
+    if( todo.sm4 )
+    {
+        unsigned int keybits = 128;
+        mbedtls_sm4_context sm4;
+        mbedtls_sm4_init( &sm4 );
+
+        mbedtls_snprintf( title, sizeof( title ), "SM4-CBC");
+
+        memset( buf, 0, sizeof( buf ) );
+        memset( tmp, 0, sizeof( tmp ) );
+        if (mbedtls_sm4_setkey_enc( &sm4, tmp, keybits ) != 0)
+           mbedtls_exit( 1 );
+
+        TIME_AND_TSC( title,
+            mbedtls_sm4_crypt_cbc( &sm4, MBEDTLS_AES_ENCRYPT, BUFSIZE, tmp, buf, buf ) );
+
+        mbedtls_sm4_free( &sm4 );
+    }
+#endif
 #endif
 
 #if defined(MBEDTLS_DES_C)

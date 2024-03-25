@@ -343,6 +343,7 @@
 //#define MBEDTLS_SHA1_ALT
 //#define MBEDTLS_SHA256_ALT
 //#define MBEDTLS_SHA512_ALT
+//#define MBEDTLS_SM3_ALT
 
 /*
  * When replacing the elliptic curve module, please consider, that it is
@@ -404,6 +405,7 @@
 //#define MBEDTLS_ECDSA_VERIFY_ALT
 //#define MBEDTLS_ECDSA_SIGN_ALT
 //#define MBEDTLS_ECDSA_GENKEY_ALT
+//#define MBEDTLS_SM3_PROCESS_ALT
 
 /**
  * \def MBEDTLS_ECP_INTERNAL_ALT
@@ -3192,6 +3194,27 @@
  * unconditionally.
  */
 //#define MBEDTLS_SHA512_USE_A64_CRYPTO_ONLY
+/**
+ * \def MBEDTLS_SM3_C
+ *
+ * Enable the sm3 hash algorithm.
+ *
+ * Module:  library/sm3.c
+ * Caller:  library/md.c
+ *
+ * This module is required for the SSL/TLS 1.2.
+ */
+#define MBEDTLS_SM3_C
+
+/**
+ * \def MBEDTLS_SM4_C
+ *
+ * Enable the SM4 block cipher.
+ *
+ * Module:  library/sm4.c
+ * Caller:
+ */
+#define MBEDTLS_SM4_C
 
 /**
  * \def MBEDTLS_SSL_CACHE_C

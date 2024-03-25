@@ -84,6 +84,7 @@ typedef enum {
     MBEDTLS_CIPHER_ID_CAMELLIA,  /**< The Camellia cipher. */
     MBEDTLS_CIPHER_ID_ARIA,      /**< The Aria cipher. */
     MBEDTLS_CIPHER_ID_CHACHA20,  /**< The ChaCha20 cipher. */
+    MBEDTLS_CIPHER_ID_SM4        /**< The SM4 cipher. */
 } mbedtls_cipher_id_t;
 
 /**
@@ -178,6 +179,11 @@ typedef enum {
     MBEDTLS_CIPHER_AES_128_KWP,          /**< AES cipher with 128-bit NIST KWP mode. */
     MBEDTLS_CIPHER_AES_192_KWP,          /**< AES cipher with 192-bit NIST KWP mode. */
     MBEDTLS_CIPHER_AES_256_KWP,          /**< AES cipher with 256-bit NIST KWP mode. */
+    MBEDTLS_CIPHER_SM4_128_ECB,          /**< SM4 cipher with 128-bit ECB mode. */
+    MBEDTLS_CIPHER_SM4_128_CBC,          /**< SM4 cipher with 128-bit CBC mode. */
+    MBEDTLS_CIPHER_SM4_128_CTR,          /**< SM4 cipher with 128-bit CTR mode. */
+    MBEDTLS_CIPHER_SM4_128_GCM,          /**< SM4 cipher with 128-bit GCM mode. */
+    MBEDTLS_CIPHER_SM4_128_CCM,          /**< SM4 cipher with 128-bit CCM mode. */
 } mbedtls_cipher_type_t;
 
 /** Supported cipher modes. */
