@@ -172,7 +172,7 @@ The features of Nuclei Mbed TLS are listed below:
 
    ![mbedtls_path](asserts/mbedtls_path.png)
 
-3. Setup Nuclei subsystem SDK to configure your toolchains and environment, you can refer to https://doc.nucleisys.com/nuclei_sdk/quickstart.html# for details.
+3. Setup Nuclei subsystem SDK to configure your toolchains and environment, you can refer to https://doc.nucleisys.com/nuclei_sdk/quickstart.html for details.
 
 4. Build and run application.
 
@@ -204,7 +204,7 @@ The features of Nuclei Mbed TLS are listed below:
 
    - Assume that you will run your application using bitstream, Nuclei N300 core and sram download mode.
 
-2. Download Nuclei Studio IDE from https://www.nucleisys.com/download.php, please refer to https://www.nucleisys.com/upload/files/doc/nucleistudio/Nuclei_Studio_User_Guide_202208.pdf to get the detailed usage of Nuclei Studio IDE.
+2. Download Nuclei Studio IDE from https://www.nucleisys.com/download.php, please refer to https://www.nucleisys.com/upload/files/doc/nucleistudio/Nuclei_Studio_User_Guide_202402.pdf to get the detailed usage of Nuclei Studio IDE.
 
 3. Go to the Nuclei Package Management page to import the zip package of the subsystem SDK until the Status is installed, you need to make sure that only one version of NucleiSDK is installed.
 
