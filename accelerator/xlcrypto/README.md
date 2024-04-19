@@ -258,7 +258,7 @@ The features of Nuclei Mbed TLS are listed below:
 
    - ACRYP: Using **one public key algorithm/s** as the starndard for data performance. For example, the standard of RSA is used as **public/s** and **private/s**, the standard of ECDSA is used as **sign/s** and **verify/s**.
 
-3. Assume that you will run your application using bitstream of **CPU frequency 32MHz**, Nuclei N300 core and sram download mode. There are three test scenarios below:
+3. Assume that you will run your application using bitstream of **CPU frequency 30MHz**, Nuclei N300 core and ilm download mode. There are three test scenarios below:
 
    - Using HASH/CRYP engine accelerated in UDMA mode and ACRYP engine
 
@@ -268,24 +268,25 @@ The features of Nuclei Mbed TLS are listed below:
 
     | Benchmark Algorithm   | HASH/CRYP/ACRYP engine (HASH/CRYP  accelerated in UDMA mode) | HASH/CRYP/ACRYP engine (HASH/CRYP  accelerated in CPU mode) | software implement            |
     | --------------------- | ------------------------------------------------------------ | ----------------------------------------------------------- | ----------------------------- |
-    | MD5                   | 4194304 KiB/s, 1 cycles/byte                                 | 4194304 KiB/s, 15 cycles/byte                               | 4194304 KiB/s, 18 cycles/byte |
-    | SHA-1                 | 4194304 KiB/s, 2 cycles/byte                                 | 4194304 KiB/s, 15 cycles/byte                               | 1024 KiB/s, 31 cycles/byte    |
-    | SHA-256               | 4194304 KiB/s, 2 cycles/byte                                 | 4194304 KiB/s, 16 cycles/byte                               | 512 KiB/s, 74 cycles/byte     |
-    | SHA-512               | 4194304 KiB/s, 2 cycles/byte                                 | 4194304 KiB/s, 16 cycles/byte                               | 341 KiB/s, 121 cycles/byte    |
-    | 3DES                  | 4194304 KiB/s, 9 cycles/byte                                 | 4194304 KiB/s, 16 cycles/byte                               | 102 KiB/s, 324 cycles/byte    |
-    | DES                   | 4194304 KiB/s, 9 cycles/byte                                 | 4194304 KiB/s, 12 cycles/byte                               | 256 KiB/s, 131 cycles/byte    |
-    | AES-CBC-128           | 4194304 KiB/s, 9 cycles/byte                                 | 4194304 KiB/s, 19 cycles/byte                               | 512 KiB/s, 86 cycles/byte     |
-    | AES-CBC-192           | 4194304 KiB/s, 9 cycles/byte                                 | 4194304 KiB/s, 19 cycles/byte                               | 341 KiB/s, 97 cycles/byte     |
-    | AES-CBC-256           | 4194304 KiB/s, 9 cycles/byte                                 | 4194304 KiB/s, 19 cycles/byte                               | 341 KiB/s, 109 cycles/byte    |
-    | AES-GCM-128           | 4194304 KiB/s, 10 cycles/byte                                | 4194304 KiB/s, 12 cycles/byte                               | 204 KiB/s, 165 cycles/byte    |
-    | AES-GCM-192           | 4194304 KiB/s, 10 cycles/byte                                | 4194304 KiB/s, 14 cycles/byte                               | 204 KiB/s, 177 cycles/byte    |
-    | AES-GCM-256           | 4194304 KiB/s, 10 cycles/byte                                | 4194304 KiB/s, 14 cycles/byte                               | 170 KiB/s, 188 cycles/byte    |
-    | AES-CCM-128           | 4194304 KiB/s, 10 cycles/byte                                | 4194304 KiB/s, 13 cycles/byte                               | 170 KiB/s, 185 cycles/byte    |
-    | AES-CCM-192           | 4194304 KiB/s, 10 cycles/byte                                | 4194304 KiB/s, 13 cycles/byte                               | 170 KiB/s, 208 cycles/byte    |
-    | AES-CCM-256           | 4194304 KiB/s, 10 cycles/byte                                | 4194304 KiB/s, 14 cycles/byte                               | 146 KiB/s, 231 cycles/byte    |
-    | RSA-2048              | 458  public/s                                                | 457  public/s                                               | 9  public/s                   |
+    | MD5                   | 14562 KiB/s, 2 cycles/byte                                   | 2778 KiB/s, 10 cycles/byte                                  | 2109 KiB/s, 13 cycles/byte    |
+    | SHA-1                 | 13464 KiB/s, 2 cycles/byte                                   | 2094 KiB/s, 13 cycles/byte                                  | 1283 KiB/s, 22 cycles/byte    |
+    | SHA-256               | 13145 KiB/s, 2 cycles/byte                                   | 1988 KiB/s, 14 cycles/byte                                  | 575 KiB/s, 50 cycles/byte     |
+    | SHA-512               | 10920 KiB/s, 2 cycles/byte                                   | 2117 KiB/s, 13 cycles/byte                                  | 275 KiB/s, 106 cycles/byte    |
+    | SM3                   | 13315 KiB/s, 2 cycles/byte                                   | 1997 KiB/s, 14 cycles/byte                                  | 389 KiB/s, 75 cycles/byte     |
+    | 3DES                  | 4058 KiB/s, 7 cycles/byte                                    | 1775 KiB/s, 16 cycles/byte                                  | 109 KiB/s, 268 cycles/byte    |
+    | DES                   | 9832 KiB/s, 2 cycles/byte                                    | 2320 KiB/s, 12 cycles/byte                                  | 267 KiB/s, 109 cycles/byte    |
+    | AES-CBC-128           | 13818 KiB/s, 2 cycles/byte                                   | 1873 KiB/s, 15 cycles/byte                                  | 406 KiB/s, 72 cycles/byte     |
+    | AES-CBC-192           | 14690 KiB/s, 1 cycles/byte                                   | 1873 KiB/s, 15 cycles/byte                                  | 361 KiB/s, 81 cycles/byte     |
+    | AES-CBC-256           | 14031 KiB/s, 2 cycles/byte                                   | 1873 KiB/s, 15 cycles/byte                                  | 325 KiB/s, 89 cycles/byte     |
+    | AES-GCM-128           | 11385 KiB/s, 2 cycles/byte                                   | 2307 KiB/s, 12 cycles/byte                                  | 201 KiB/s, 145 cycles/byte    |
+    | AES-GCM-192           | 11198 KiB/s, 2 cycles/byte                                   | 2308 KiB/s, 12 cycles/byte                                  | 189 KiB/s, 154 cycles/byte    |
+    | AES-GCM-256           | 11160 KiB/s, 2 cycles/byte                                   | 2307 KiB/s, 12 cycles/byte                                  | 179 KiB/s, 163 cycles/byte    |
+    | AES-CCM-128           | 9104 KiB/s, 3 cycles/byte                                    | 2315 KiB/s, 12 cycles/byte                                  | 189 KiB/s, 154 cycles/byte    |
+    | AES-CCM-192           | 8441 KiB/s, 3 cycles/byte                                    | 2145 KiB/s, 13 cycles/byte                                  | 169 KiB/s, 172 cycles/byte    |
+    | AES-CCM-256           | 7886 KiB/s, 3 cycles/byte                                    | 2145 KiB/s, 13 cycles/byte                                  | 153 KiB/s, 191 cycles/byte    |
+    | RSA-2048              | 442  public/s                                                | 442  public/s                                               | 8  public/s                   |
     | RSA-2048              | 5 private/s                                                  | 5 private/s                                                 | 0 private/s                   |
-    | RSA-4096              | 143  public/s                                                | 143  public/s                                               | 2  public/s                   |
+    | RSA-4096              | 136  public/s                                                | 136  public/s                                               | 2  public/s                   |
     | RSA-4096              | 1 private/s                                                  | 1 private/s                                                 | 0 private/s                   |
     | ECDSA-secp521r1       | 12 sign/s                                                    | 11 sign/s                                                   | 1 sign/s                      |
     | ECDSA-brainpoolP512r1 | 12 sign/s                                                    | 12 sign/s                                                   | 0 sign/s                      |
@@ -313,12 +314,12 @@ The features of Nuclei Mbed TLS are listed below:
     | ECDHE-brainpoolP512r1 | 3 full handshake/s                                           | 3 full handshake/s                                          | 0 full handshake/s            |
     | ECDHE-secp384r1       | 6 full handshake/s                                           | 6 full handshake/s                                          | 0 full handshake/s            |
     | ECDHE-brainpoolP384r1 | 6 full handshake/s                                           | 6 full handshake/s                                          | 0 full handshake/s            |
-    | ECDHE-secp256r1       | 16 full handshake/s                                          | 16 full handshake/s                                         | 0 full handshake/s            |
-    | ECDHE-secp256k1       | 16 full handshake/s                                          | 16 full handshake/s                                         | 0 full handshake/s            |
-    | ECDHE-brainpoolP256r1 | 16 full handshake/s                                          | 16 full handshake/s                                         | 0 full handshake/s            |
-    | ECDHE-secp224r1       | 18 full handshake/s                                          | 18 full handshake/s                                         | 1 full handshake/s            |
-    | ECDHE-secp224k1       | 23 full handshake/s                                          | 23 full handshake/s                                         | 0 full handshake/s            |
-    | ECDHE-secp192r1       | 28 full handshake/s                                          | 28 full handshake/s                                         | 1 full handshake/s            |
-    | ECDHE-secp192k1       | 28 full handshake/s                                          | 28 full handshake/s                                         | 0 full handshake/s            |
-    | ECDHE-x25519          | 24 full handshake/s                                          | 24 full handshake/s                                         | 0 full handshake/s            |
-    | ECDHE-x448            | 7 full handshake/s                                           | 7 full handshake/s                                          | 0 full handshake/s            |
+    | ECDHE-secp256r1       | 15 full handshake/s                                          | 15 full handshake/s                                         | 0 full handshake/s            |
+    | ECDHE-secp256k1       | 15 full handshake/s                                          | 15 full handshake/s                                         | 0 full handshake/s            |
+    | ECDHE-brainpoolP256r1 | 15 full handshake/s                                          | 15 full handshake/s                                         | 0 full handshake/s            |
+    | ECDHE-secp224r1       | 17 full handshake/s                                          | 17 full handshake/s                                         | 1 full handshake/s            |
+    | ECDHE-secp224k1       | 21 full handshake/s                                          | 21 full handshake/s                                         | 0 full handshake/s            |
+    | ECDHE-secp192r1       | 27 full handshake/s                                          | 27 full handshake/s                                         | 1 full handshake/s            |
+    | ECDHE-secp192k1       | 27 full handshake/s                                          | 27 full handshake/s                                         | 0 full handshake/s            |
+    | ECDHE-x25519          | 22 full handshake/s                                          | 22 full handshake/s                                         | 0 full handshake/s            |
+    | ECDHE-x448            | 6 full handshake/s                                           | 6 full handshake/s                                          | 0 full handshake/s            |
