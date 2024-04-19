@@ -272,7 +272,6 @@ The features of Nuclei Mbed TLS are listed below:
     | SHA-1                 | 13464 KiB/s, 2 cycles/byte                                   | 2094 KiB/s, 13 cycles/byte                                  | 1283 KiB/s, 22 cycles/byte    |
     | SHA-256               | 13145 KiB/s, 2 cycles/byte                                   | 1988 KiB/s, 14 cycles/byte                                  | 575 KiB/s, 50 cycles/byte     |
     | SHA-512               | 10920 KiB/s, 2 cycles/byte                                   | 2117 KiB/s, 13 cycles/byte                                  | 275 KiB/s, 106 cycles/byte    |
-    | SM3                   | 13315 KiB/s, 2 cycles/byte                                   | 1997 KiB/s, 14 cycles/byte                                  | 389 KiB/s, 75 cycles/byte     |
     | 3DES                  | 4058 KiB/s, 7 cycles/byte                                    | 1775 KiB/s, 16 cycles/byte                                  | 109 KiB/s, 268 cycles/byte    |
     | DES                   | 9832 KiB/s, 2 cycles/byte                                    | 2320 KiB/s, 12 cycles/byte                                  | 267 KiB/s, 109 cycles/byte    |
     | AES-CBC-128           | 13818 KiB/s, 2 cycles/byte                                   | 1873 KiB/s, 15 cycles/byte                                  | 406 KiB/s, 72 cycles/byte     |

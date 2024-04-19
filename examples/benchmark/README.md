@@ -36,24 +36,24 @@ Nuclei SDK Build Time: Dec  8 2022, 18:01:33
 Download Mode: SRAM
 CPU Frequency 32000403 Hz
 
-    MD5                      :  4194304 KiB/s, 1 cycles/byte
-    SHA-1                    :  4194304 KiB/s, 2 cycles/byte
-    SHA-256                  :  4194304 KiB/s, 2 cycles/byte
-    SHA-512                  :  4194304 KiB/s, 2 cycles/byte
-    3DES                     :  4194304 KiB/s, 9 cycles/byte
-    DES                      :  4194304 KiB/s, 9 cycles/byte
-    AES-CBC-128              :  4194304 KiB/s, 9 cycles/byte
-    AES-CBC-192              :  4194304 KiB/s, 9 cycles/byte
-    AES-CBC-256              :  4194304 KiB/s, 9 cycles/byte
-    AES-GCM-128              :  4194304 KiB/s, 10 cycles/byte
-    AES-GCM-192              :  4194304 KiB/s, 10 cycles/byte
-    AES-GCM-256              :  4194304 KiB/s, 10 cycles/byte
-    AES-CCM-128              :  4194304 KiB/s, 10 cycles/byte
-    AES-CCM-192              :  4194304 KiB/s, 10 cycles/byte
-    AES-CCM-256              :  4194304 KiB/s, 10 cycles/byte
-    RSA-2048                 :  458   public/s
+    MD5                      :  14562 KiB/s, 2 cycles/byte
+    SHA-1                    :  13464 KiB/s, 2 cycles/byte
+    SHA-256                  :  13145 KiB/s, 2 cycles/byte
+    SHA-512                  :  10920 KiB/s, 2 cycles/byte
+    3DES                     :  4058 KiB/s,  7 cycles/byte
+    DES                      :  9832 KiB/s,  2 cycles/byte
+    AES-CBC-128              :  13818 KiB/s, 2 cycles/byte
+    AES-CBC-192              :  14690 KiB/s, 1 cycles/byte
+    AES-CBC-256              :  14031 KiB/s, 2 cycles/byte
+    AES-GCM-128              :  11385 KiB/s, 2 cycles/byte
+    AES-GCM-192              :  11198 KiB/s, 2 cycles/byte
+    AES-GCM-256              :  11160 KiB/s, 2 cycles/byte
+    AES-CCM-128              :  9104 KiB/s,  3 cycles/byte
+    AES-CCM-192              :  8441 KiB/s,  3 cycles/byte
+    AES-CCM-256              :  7886 KiB/s,  3 cycles/byte
+    RSA-2048                 :  442   public/s
     RSA-2048                 :  5  private/s
-    RSA-4096                 :  143   public/s
+    RSA-4096                 :  136   public/s
     RSA-4096                 :  1  private/s
     ECDSA-secp521r1          :  12  sign/s
     ECDSA-brainpoolP512r1    :  12  sign/s
@@ -81,12 +81,12 @@ CPU Frequency 32000403 Hz
     ECDHE-brainpoolP512r1    :  3  full handshake/s
     ECDHE-secp384r1          :  6  full handshake/s
     ECDHE-brainpoolP384r1    :  6  full handshake/s
-    ECDHE-secp256r1          :  16  full handshake/s
-    ECDHE-secp256k1          :  16  full handshake/s
-    ECDHE-brainpoolP256r1    :  16  full handshake/s
-    ECDHE-secp224r1          :  18  full handshake/s
-    ECDHE-secp224k1          :  23  full handshake/s
-    ECDHE-secp192r1          :  28  full handshake/s
-    ECDHE-secp192k1          :  28  full handshake/s
-    ECDHE-x25519             :  24  full handshake/s
-    ECDHE-x448               :  7  full handshake/s
+    ECDHE-secp256r1          :  15  full handshake/s
+    ECDHE-secp256k1          :  15  full handshake/s
+    ECDHE-brainpoolP256r1    :  15  full handshake/s
+    ECDHE-secp224r1          :  17  full handshake/s
+    ECDHE-secp224k1          :  21  full handshake/s
+    ECDHE-secp192r1          :  27  full handshake/s
+    ECDHE-secp192k1          :  27  full handshake/s
+    ECDHE-x25519             :  22  full handshake/s
+    ECDHE-x448               :  6  full handshake/s
