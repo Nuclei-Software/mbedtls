@@ -19,38 +19,31 @@
 #define MBEDTLS_RV_CRYPTO_ALT_CONFIG_H
 
 
-/* AES supports the ECB/CBC/CTR/GCM/CCM modes. To use AES algorithm, turn on all
- * the following AES SETKEY enable macros and corresponding mode encryption/decryption
- * enable macros.
- * For example:
- * Turn on MBEDTLS_AES_SETKEY_ENC_ALT, MBEDTLS_AES_GCM_SETKEY_ALT and MBEDTLS_AES_GCM_CRYPT_ALT
- * to speed up AES GCM, otherwise not.
- */
-/* AES ECB/CBC/CTR/GCM/CCM set encryption key(mbedtls-existed) */
 #define MBEDTLS_AES_SETKEY_ENC_ALT
-/* AES ECB/CBC set decryption key(mbedtls-existed) */
 #define MBEDTLS_AES_SETKEY_DEC_ALT
-/* AES ECB encryption(mbedtls-existed) */
 #define MBEDTLS_AES_ENCRYPT_ALT
-/* AES ECB decryption(mbedtls-existed) */
 #define MBEDTLS_AES_DECRYPT_ALT
 
-#define MBEDTLS_SHA256_PROCESS_ALT
-
-#define MBEDTLS_SHA512_PROCESS_ALT
-
-#if defined(MBEDTLS_ACC_SCALAR_K)
-#define MBEDTLS_SM3_PROCESS_ALT
+#if defined(MBEDTLS_ACC_VECTOR_K)
+#define MBEDTLS_AES_CBC_ALT
 #endif
 
+#define MBEDTLS_SHA256_PROCESS_ALT
+#define MBEDTLS_SHA512_PROCESS_ALT
+
 #if defined(MBEDTLS_ACC_VECTOR_K)
-#define MBEDTLS_SM3_ALT
+#define MBEDTLS_SHA256_UPDATE_ALT
+#define MBEDTLS_SHA512_UPDATE_ALT
+#endif
+
+#define MBEDTLS_SM3_PROCESS_ALT
+
+#if defined(MBEDTLS_ACC_VECTOR_K)
+#define MBEDTLS_SM3_UPDATE_ALT
 #endif
 
 #define MBEDTLS_SM4_SETKEY_ENC_ALT
-
 #define MBEDTLS_SM4_SETKEY_DEC_ALT
-
 #define MBEDTLS_SM4_CRYPT_ECB_ALT
 
 #endif

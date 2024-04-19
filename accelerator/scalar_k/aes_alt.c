@@ -45,10 +45,6 @@
 #endif /* MBEDTLS_PLATFORM_C */
 #endif /* MBEDTLS_SELF_TEST */
 
-#include <nmsis_bench.h>
-BENCH_DECLARE_VAR();
-
-//#define printf
 /*
  * AES key schedule (encryption)
  */
@@ -56,12 +52,8 @@ BENCH_DECLARE_VAR();
 int mbedtls_aes_setkey_enc( mbedtls_aes_context *ctx, const unsigned char *key,
                     unsigned int keybits )
 {
-    uint32_t *RK;
+    uint32_t *RK = ctx->buf;
 
-    ctx->rk_offset = 0;
-
-    RK = ctx->buf + ctx->rk_offset;
-   // BENCH_START(mbedtls_aes_setkey_enc);
     switch( keybits )
     {
         case 128:
@@ -76,9 +68,10 @@ int mbedtls_aes_setkey_enc( mbedtls_aes_context *ctx, const unsigned char *key,
           ctx->nr = 14;
           aes_256_enc_key_schedule(RK, (unsigned char *)key);
           break;
-        default : return( MBEDTLS_ERR_AES_INVALID_KEY_LENGTH );
+        default :
+          return( MBEDTLS_ERR_AES_INVALID_KEY_LENGTH );
     }
-  //  BENCH_END(mbedtls_aes_setkey_enc);
+
     return 0;
 
 }
@@ -91,11 +84,8 @@ int mbedtls_aes_setkey_enc( mbedtls_aes_context *ctx, const unsigned char *key,
 int mbedtls_aes_setkey_dec( mbedtls_aes_context *ctx, const unsigned char *key,
                     unsigned int keybits )
 {
-    uint32_t *RK;
+    uint32_t *RK = ctx->buf;
 
-    ctx->rk_offset = 0;
-    RK = ctx->buf + ctx->rk_offset;
-   // BENCH_START(mbedtls_aes_setkey_dec);
     switch( keybits )
     {
         case 128:
@@ -110,9 +100,10 @@ int mbedtls_aes_setkey_dec( mbedtls_aes_context *ctx, const unsigned char *key,
           ctx->nr = 14;
           aes_256_dec_key_schedule(RK, (unsigned char *)key);
           break;
-        default : return( MBEDTLS_ERR_AES_INVALID_KEY_LENGTH );
+        default :
+          return( MBEDTLS_ERR_AES_INVALID_KEY_LENGTH );
     }
-   // BENCH_END(mbedtls_aes_setkey_dec);
+
     return 0;
 
 }
@@ -125,22 +116,22 @@ int mbedtls_internal_aes_encrypt( mbedtls_aes_context *ctx,
                                   const unsigned char input[16],
                                   unsigned char output[16] )
 {
-    uint32_t *RK = ctx->buf + ctx->rk_offset;
-    //BENCH_START(mbedtls_internal_aes_encrypt);
+    uint32_t *RK = ctx->buf;
+
     switch( ctx->nr )
     {
         case 10:
-        aes_128_ecb_encrypt(output, (unsigned char *)input, RK);
-        break;
+          aes_128_ecb_encrypt(output, (unsigned char *)input, RK);
+          break;
         case 12:
-        aes_192_ecb_encrypt(output, (unsigned char *)input, RK);
-        break;
+          aes_192_ecb_encrypt(output, (unsigned char *)input, RK);
+          break;
         case 14:
-        aes_256_ecb_encrypt(output, (unsigned char *)input, RK);
-        break;
-        default : return( MBEDTLS_ERR_AES_INVALID_KEY_LENGTH );
+          aes_256_ecb_encrypt(output, (unsigned char *)input, RK);
+          break;
+        default :
+        return( MBEDTLS_ERR_AES_INVALID_KEY_LENGTH );
     }
-    //BENCH_END(mbedtls_internal_aes_encrypt);
 
     return( 0 );
 }
@@ -155,22 +146,23 @@ int mbedtls_internal_aes_decrypt( mbedtls_aes_context *ctx,
                                   const unsigned char input[16],
                                   unsigned char output[16] )
 {
-    uint32_t *RK = ctx->buf + ctx->rk_offset;
-  //  BENCH_START(mbedtls_internal_aes_decrypt);
+    uint32_t *RK = ctx->buf;
+
     switch( ctx->nr )
     {
         case 10:
-        aes_128_ecb_decrypt(output, (unsigned char *)input, RK);
-        break;
+          aes_128_ecb_decrypt(output, (unsigned char *)input, RK);
+          break;
         case 12:
-        aes_192_ecb_decrypt(output, (unsigned char *)input, RK);
-        break;
+          aes_192_ecb_decrypt(output, (unsigned char *)input, RK);
+          break;
         case 14:
-        aes_256_ecb_decrypt(output, (unsigned char *)input, RK);
-        break;
-        default : return( MBEDTLS_ERR_AES_INVALID_KEY_LENGTH );
+          aes_256_ecb_decrypt(output, (unsigned char *)input, RK);
+          break;
+        default :
+          return( MBEDTLS_ERR_AES_INVALID_KEY_LENGTH );
     }
-  //  BENCH_END(mbedtls_internal_aes_decrypt);
+
     return( 0 );
 
 }

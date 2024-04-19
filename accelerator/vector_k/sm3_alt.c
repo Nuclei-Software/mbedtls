@@ -15,13 +15,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 #include "common.h"
 
 #if defined(MBEDTLS_SM3_C)
 
 // #define MBEDTLS_DEBUG
 
-#include "zvksh.h"
 #include "mbedtls/sm3.h"
 #include "mbedtls/platform_util.h"
 #include "mbedtls/error.h"
@@ -40,133 +40,73 @@
 #endif /* MBEDTLS_PLATFORM_C */
 #endif /* MBEDTLS_SELF_TEST */
 
+#include "api_sm3.h"
 
-#if defined(MBEDTLS_SM3_ALT)
-
-// SM3 produces a 256 bits / 32 bytes hash.
-#define SM3_HASH_BYTES (32)
-
-#define MESSAGE_MAX_LENGTHS 5978
-uint8_t input_ext[MESSAGE_MAX_LENGTHS];
-
-typedef void (*hash_fn_t)(
-    void* dest,
-    const void* src,
-    uint64_t length
-);
-
-struct sm3_routine {
-    const char* name;
-    // Minimum VLEN (bits) required to run this hash routine.
-    size_t min_vlen;
-    // Function pointer to the block hashing routine.
-    hash_fn_t hash_fn;
-};
-
-// SM3 block hashing routines.
-#define NUM_SM3_ROUTINES (3)
-const struct sm3_routine sm3_routines[NUM_SM3_ROUTINES] = {
-    {
-        .name = "zvksh_sm3_encode_lmul1",
-        .min_vlen = 256,
-        .hash_fn = zvksh_sm3_encode_lmul1,
-    },
-    {
-        .name = "zvksh_sm3_encode_lmul2",
-        .min_vlen = 128,
-        .hash_fn = zvksh_sm3_encode_lmul2,
-    },
-    {
-        .name = "zvksh_sm3_encode_lmul4",
-        .min_vlen = 64,
-        .hash_fn = zvksh_sm3_encode_lmul4,
-    },
-};
-
-// Pad input to block size, append delimiter and length.
-static size_t
-sm3_pad(uint8_t* output, const uint8_t* input, size_t len)
+#if defined(MBEDTLS_SM3_PROCESS_ALT)
+/* SM3 Compression Function, CF */
+int mbedtls_internal_sm3_process( mbedtls_sm3_context *ctx,
+                                  const unsigned char data[64] )
 {
-    const size_t blen = 8 * len;
-    memcpy(output, input, len);
-    output[len++] |= 0x80;
+  sm3_transform_zvksh_zvkb(ctx->state, data, 1);
 
-    // Calculate the padding size.
-    // Message size is appended at the end of the last block,
-    // take that into account.
-    size_t padding = 64 - (len % 64);
-    if (padding < sizeof(uint64_t)) {
-        padding += 64;
-    }
-
-    bzero(output + len, padding);
-    len += padding;
-
-    uint32_t* ptr = (uint32_t*)(output + len - sizeof(uint64_t));
-
-    *ptr = __builtin_bswap32(blen >> 32);
-    *(++ptr) = __builtin_bswap32(blen & UINT32_MAX);
-
-    return len;
+  return( 0 );
 }
 
-void mbedtls_sm3_init( mbedtls_sm3_context *ctx )
+size_t mbedtls_internal_sm3_process_many( mbedtls_sm3_context *ctx,
+                  const uint8_t *msg, size_t num )
 {
-    memset( ctx, 0, sizeof( mbedtls_sm3_context ) );
+   sm3_transform_zvksh_zvkb(ctx->state, msg, num);
+
+   return( 0 );
 }
 
-void mbedtls_sm3_free( mbedtls_sm3_context *ctx )
-{
-    if( ctx == NULL )
-        return;
+#endif /* MBEDTLS_SM3_PROCESS_ALT */
 
-    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_sm3_context ) );
-}
 
-void mbedtls_sm3_clone( mbedtls_sm3_context *dst,
-                        const mbedtls_sm3_context *src )
-{
-    *dst = *src;
-}
-
-/*
- * SM3 context setup
- */
-int mbedtls_sm3_starts_ret( mbedtls_sm3_context *ctx )
-{
-    return( 0 );
-}
-
-/*
- * SM3 process buffer
- */
+#if defined(MBEDTLS_SM3_UPDATE_ALT)
 int mbedtls_sm3_update_ret( mbedtls_sm3_context *ctx,
                             const unsigned char *input,
                             size_t ilen )
 {
-    if (ilen > MESSAGE_MAX_LENGTHS - 64) {
-      printf("Error: need more buffer!! ilen = %lu\r\n", ilen);
-      return -1;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    size_t fill;
+    uint32_t left;
+
+    if( ilen == 0 )
+        return( 0 );
+
+    left = ctx->total[0] & 0x3F;
+    fill = 64 - left;
+
+    ctx->total[0] += (uint32_t) ilen;
+    ctx->total[0] &= 0xFFFFFFFF;
+
+    if( ctx->total[0] < (uint32_t) ilen )
+        ctx->total[1]++;
+
+    if( left && ilen >= fill )
+    {
+        memcpy( (void *) (ctx->buffer + left), input, fill );
+        if( ( ret = mbedtls_internal_sm3_process( ctx, ctx->buffer ) ) != 0 )
+            return( ret );
+
+        input += fill;
+        ilen  -= fill;
+        left = 0;
     }
-    const size_t len = sm3_pad(input_ext, (uint8_t*)input, ilen);
-    const struct sm3_routine* const routine = &sm3_routines[1];
-    routine->hash_fn(ctx->buffer, input_ext, len);
+
+    if (ilen >= 64) {
+      mbedtls_internal_sm3_process_many(ctx, input, ilen >> 6);
+      input += ilen & 0xFFFFFFFFFFFFFFC0;
+      ilen &= 0x3F;
+    }
+
+    if( ilen > 0 )
+        memcpy( (void *) (ctx->buffer + left), input, ilen );
 
     return( 0 );
 }
 
-/*
- * SM3 final digest
- */
-int mbedtls_sm3_finish_ret( mbedtls_sm3_context *ctx,
-                            unsigned char output[32] )
-{
-   for (int i = 0; i < 32; i++)
-     output[i] = ctx->buffer[i];
-   return( 0 );
-}
-
-#endif /* MBEDTLS_SM3_ALT */
-
+#endif /* MBEDTLS_SM3_UPDATE_ALT */
 
 #endif /* MBEDTLS_SM3_C */

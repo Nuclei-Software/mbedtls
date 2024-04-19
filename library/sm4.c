@@ -338,8 +338,8 @@ int mbedtls_sm4_crypt_cbc( mbedtls_sm4_context *ctx,
             memcpy( temp, input, 16 );
             mbedtls_sm4_crypt_ecb( ctx, mode, input, output );
 
-            for( i = 0; i < 16; i++ )
-                output[i] = (uint8_t)( output[i] ^ iv[i] );
+            for( i = 0; i < 16; i += sizeof(size_t) )
+                *(size_t *)(output + i) = *(size_t *)(output + i) ^ *(size_t *)(iv + i);
 
             memcpy( iv, temp, 16 );
 
@@ -352,8 +352,8 @@ int mbedtls_sm4_crypt_cbc( mbedtls_sm4_context *ctx,
     {
         while( length > 0 )
         {
-            for( i = 0; i < 16; i++ )
-                output[i] = (uint8_t)( input[i] ^ iv[i] );
+            for( i = 0; i < 16; i += sizeof(size_t) )
+                *(size_t *)(output + i) = *(size_t *)(input + i) ^ *(size_t *)(iv + i);
 
             mbedtls_sm4_crypt_ecb( ctx, mode, output, output );
             memcpy( iv, output, 16 );

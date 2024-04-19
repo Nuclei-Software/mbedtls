@@ -1011,8 +1011,8 @@ int mbedtls_aes_crypt_cbc( mbedtls_aes_context *ctx,
             if( ret != 0 )
                 goto exit;
 
-            for( i = 0; i < 16; i++ )
-                output[i] = (unsigned char)( output[i] ^ iv[i] );
+            for( i = 0; i < 16; i += sizeof(size_t) )
+                *(size_t *)(output + i) = *(size_t *)(output + i) ^ *(size_t *)(iv + i);
 
             memcpy( iv, temp, 16 );
 
@@ -1025,8 +1025,8 @@ int mbedtls_aes_crypt_cbc( mbedtls_aes_context *ctx,
     {
         while( length > 0 )
         {
-            for( i = 0; i < 16; i++ )
-                output[i] = (unsigned char)( input[i] ^ iv[i] );
+            for( i = 0; i < 16; i += sizeof(size_t) )
+                 *(size_t *)(output + i) = *(size_t *)(input + i) ^ *(size_t *)(iv + i);
 
             ret = mbedtls_aes_crypt_ecb( ctx, mode, output, output );
             if( ret != 0 )

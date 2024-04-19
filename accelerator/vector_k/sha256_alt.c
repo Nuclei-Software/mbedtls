@@ -15,13 +15,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 #include "common.h"
 
 #if defined(MBEDTLS_SHA256_C)
 
 // #define MBEDTLS_DEBUG
 
-#include "zvknh.h"
 #include "mbedtls/sha256.h"
 #include "mbedtls/platform_util.h"
 #include "mbedtls/error.h"
@@ -40,89 +40,77 @@
 #endif /* MBEDTLS_PLATFORM_C */
 #endif /* MBEDTLS_SELF_TEST */
 
+#include "api_sha256.h"
 
 #if defined(MBEDTLS_SHA256_PROCESS_ALT)
 
+#define mbedtls_internal_sha256_process_many_c mbedtls_internal_sha256_process_many
 #define mbedtls_internal_sha256_process_c      mbedtls_internal_sha256_process
 
 #define SHA256_BLOCK_SIZE 64
 
-typedef void (*block_fn_t)(uint8_t* hash, const void* block);
-
-struct sha_routine {
-    const char* name;
-    // Minimum VLEN (bits) required to run this hash routine.
-    size_t min_vlen;
-    // Function pointer to the block hashing routine.
-    block_fn_t hash_fn;
-};
-
-// SHA-256 block hashing routines.
-#define NUM_SHA256_ROUTINES (2)
-const struct sha_routine sha256_routines[NUM_SHA256_ROUTINES] = {
-    {
-        .name = "sha256_block_lmul1",
-        .min_vlen = 128,
-        .hash_fn = sha256_block_lmul1,
-    },
-    {
-        .name = "sha256_block_vslide_lmul1",
-        .min_vlen = 128,
-        .hash_fn = sha256_block_vslide_lmul1,
-    },
-};
-
-struct sha_params {
-    size_t digest_size;
-    size_t block_size;
-    size_t size_field_len;
-    size_t initial_hash_size;
-    const void* initial_hash;
-    size_t num_routines;
-    const struct sha_routine* routines;
-};
-
-const struct sha_params sha256_params = {
-    .digest_size = SHA256_DIGEST_SIZE,
-    .block_size = SHA256_BLOCK_SIZE,
-    .size_field_len = sizeof(uint64_t),
-    .initial_hash = kSha256InitialHash,
-    .initial_hash_size = sizeof(kSha256InitialHash),
-    .num_routines = NUM_SHA256_ROUTINES,
-    .routines = sha256_routines,
-};
-
 int mbedtls_internal_sha256_process_c( mbedtls_sha256_context *ctx,
                                 const unsigned char data[SHA256_BLOCK_SIZE] )
 {
-    uint32_t A[8];
-    const struct sha_params* params = &sha256_params;
+    sha256_transform_zvknha_or_zvknhb_zvkb(ctx->state, data, 1);
+    return( 0 );
+}
 
-    A[0] = ctx->state[5];
-    A[1] = ctx->state[4];
-    A[2] = ctx->state[1];
-    A[3] = ctx->state[0];
-    A[4] = ctx->state[7];
-    A[5] = ctx->state[6];
-    A[6] = ctx->state[3];
-    A[7] = ctx->state[2];
-
-    const struct sha_routine* const routine = &params->routines[0];
-    block_fn_t hash_block_fn = routine->hash_fn;
-    hash_block_fn(A, data);
-
-    ctx->state[5] = A[0];
-    ctx->state[4] = A[1];
-    ctx->state[1] = A[2];
-    ctx->state[0] = A[3];
-    ctx->state[7] = A[4];
-    ctx->state[6] = A[5];
-    ctx->state[3] = A[6];
-    ctx->state[2] = A[7];
-
+size_t mbedtls_internal_sha256_process_many_c(
+                  mbedtls_sha256_context *ctx, const uint8_t *data, size_t len )
+{
+    sha256_transform_zvknha_or_zvknhb_zvkb(ctx->state, data, len);
     return( 0 );
 }
 
 #endif /* MBEDTLS_SHA256_PROCESS_ALT */
+
+#if defined(MBEDTLS_SHA256_UPDATE_ALT)
+int mbedtls_sha256_update( mbedtls_sha256_context *ctx,
+                               const unsigned char *input,
+                               size_t ilen )
+{
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    size_t fill;
+    uint32_t left;
+
+    if( ilen == 0 )
+        return( 0 );
+
+    left = ctx->total[0] & 0x3F;
+    fill = SHA256_BLOCK_SIZE - left;
+
+    ctx->total[0] += (uint32_t) ilen;
+    ctx->total[0] &= 0xFFFFFFFF;
+
+    if( ctx->total[0] < (uint32_t) ilen )
+        ctx->total[1]++;
+
+    if( left && ilen >= fill )
+    {
+        memcpy( (void *) (ctx->buffer + left), input, fill );
+
+        if( ( ret = mbedtls_internal_sha256_process( ctx, ctx->buffer ) ) != 0 )
+            return( ret );
+
+        input += fill;
+        ilen  -= fill;
+        left = 0;
+    }
+
+    if ( ilen >= SHA256_BLOCK_SIZE )
+    {
+        mbedtls_internal_sha256_process_many( ctx, input, ilen >> 6);
+
+        input += ilen & 0xFFFFFFFFFFFFFFC0;
+        ilen &= 0x3F;
+    }
+
+    if( ilen > 0 )
+        memcpy( (void *) (ctx->buffer + left), input, ilen );
+
+    return( 0 );
+}
+#endif
 
 #endif /* MBEDTLS_SHA256_C */

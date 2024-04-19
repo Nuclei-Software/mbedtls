@@ -146,7 +146,7 @@ extern int mpi_mont_config(const mbedtls_mpi *N, const mbedtls_mpi *P, const mbe
 
 #define TIME_AND_TSC( TITLE, CODE )                                     \
 do {                                                                    \
-    unsigned long jj;                                                   \
+    uint64_t jj;                                                   \
     uint64_t tsc, tsc_end;                                              \
     int ret = 0;                                                        \
                                                                         \
@@ -520,7 +520,7 @@ static int set_ecp_curve( const char *string, mbedtls_ecp_curve_info *curve )
 unsigned char buf[BUFSIZE];
 
 typedef struct {
-    char md5, ripemd160, sha1, sha256, sha512, sm3, sm4,
+    char md5, ripemd160, sha1, sha256, sha512, sm3, sm4_cbc,
          des3, des,
          aes_cbc, aes_gcm, aes_ccm, aes_xts, chachapoly,
          aes_cmac, des3_cmac,
@@ -574,8 +574,8 @@ int main( int argc, char *argv[] )
                 todo.sha512 = 1;
             else if( strcmp( argv[i], "sm3" ) == 0 )
                 todo.sm3 = 1;
-            else if( strcmp( argv[i], "sm4" ) == 0 )
-                todo.sm4 = 1;
+            else if( strcmp( argv[i], "sm4_cbc" ) == 0 )
+                todo.sm4_cbc = 1;
             else if( strcmp( argv[i], "des3" ) == 0 )
                 todo.des3 = 1;
             else if( strcmp( argv[i], "des" ) == 0 )
@@ -665,7 +665,7 @@ int main( int argc, char *argv[] )
 
 #if defined(MBEDTLS_SM4_C)
 #if defined(MBEDTLS_CIPHER_MODE_CBC)
-    if( todo.sm4 )
+    if( todo.sm4_cbc )
     {
         unsigned int keybits = 128;
         mbedtls_sm4_context sm4;

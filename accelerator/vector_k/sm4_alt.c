@@ -25,7 +25,6 @@
 // #define MBEDTLS_DEBUG
 
 #include "mbedtls/sm4.h"
-#include "zvksed.h"
 #include "mbedtls/platform.h"
 #include "mbedtls/platform_util.h"
 #include "mbedtls/error.h"
@@ -45,6 +44,8 @@
 #endif /* MBEDTLS_PLATFORM_C */
 #endif /* MBEDTLS_SELF_TEST */
 
+#include "api_sm4.h"
+
 /*
  * AES key schedule (encryption)
  */
@@ -54,14 +55,12 @@ int mbedtls_sm4_setkey_enc( mbedtls_sm4_context *ctx,
                             unsigned int keybits )
 {
   uint32_t *RK = ctx->rk;
+  uint32_t rkey_dec[SM4_RKEY_WORDS];
 
   if( keybits != 128 )
      return MBEDTLS_ERR_SM4_INVALID_KEY_LENGTH;
 
-  RK[0] = __builtin_bswap32(*((uint32_t *)key));
-  RK[1] = __builtin_bswap32(*((uint32_t *)key + 1));
-  RK[2] = __builtin_bswap32(*((uint32_t *)key + 2));
-  RK[3] = __builtin_bswap32(*((uint32_t *)key + 3));
+    sm4_expandkey_zvksed_zvkb(key, RK, rkey_dec);
 
   return ( 0 );
 }
@@ -76,17 +75,14 @@ int mbedtls_sm4_setkey_dec( mbedtls_sm4_context *ctx,
                             unsigned int keybits )
 {
   uint32_t *RK = ctx->rk;
+  uint32_t rkey_enc[SM4_RKEY_WORDS];
 
   if( keybits != 128 )
     return MBEDTLS_ERR_SM4_INVALID_KEY_LENGTH;
 
-  RK[0] = __builtin_bswap32(*((uint32_t *)key));
-  RK[1] = __builtin_bswap32(*((uint32_t *)key + 1));
-  RK[2] = __builtin_bswap32(*((uint32_t *)key + 2));
-  RK[3] = __builtin_bswap32(*((uint32_t *)key + 3));
+    sm4_expandkey_zvksed_zvkb(key, rkey_enc, RK);
 
   return ( 0 );
-
 }
 #endif /* MBEDTLS_SM4_SETKEY_DEC_ALT */
 
@@ -95,45 +91,14 @@ int mbedtls_sm4_setkey_dec( mbedtls_sm4_context *ctx,
  */
 #if defined(MBEDTLS_SM4_CRYPT_ECB_ALT)
 
-static void
-sm4_encrypt_single(uint32_t *key, size_t len, uint32_t *input,
-                   uint32_t *output, bool encrypt)
-{
-    if (encrypt) {
-        zvksed_sm4_encode_vv(output, input, len, key);
-    } else {
-        zvksed_sm4_decode_vv(output, input, len, key);
-    }
-}
-
 int mbedtls_sm4_crypt_ecb( mbedtls_sm4_context *ctx,
                     int mode,
-                    const unsigned char input[16],
-                    unsigned char output[16] )
+                    const unsigned char input[SM4_BLOCK_SIZE],
+                    unsigned char output[SM4_BLOCK_SIZE] )
 {
   uint32_t *RK = ctx->rk;
-  uint32_t input_b[4];
-  uint32_t output_b[4];
-  uint32_t *pres = output;
 
-  input_b[0] = __builtin_bswap32(*((uint32_t *)input));
-  input_b[1] = __builtin_bswap32(*((uint32_t *)input + 1));
-  input_b[2] = __builtin_bswap32(*((uint32_t *)input + 2));
-  input_b[3] = __builtin_bswap32(*((uint32_t *)input + 3));
-
-  if ( mode == MBEDTLS_SM4_ENCRYPT ) {
-     sm4_encrypt_single((uint32_t *)RK, 16, (uint32_t *)input_b, (uint32_t *)output_b, true);
-  } else if ( mode == MBEDTLS_SM4_DECRYPT ) {
-     sm4_encrypt_single((uint32_t *)RK, 16, (uint32_t *)input_b, (uint32_t *)output_b, false);
-  } else {
-     mbedtls_printf("%s wrong mode!\r\n", __func__);
-     return ( -1 );
-  }
-
-  pres[0] = __builtin_bswap32(output_b[0]);
-  pres[1] = __builtin_bswap32(output_b[1]);
-  pres[2] = __builtin_bswap32(output_b[2]);
-  pres[3] = __builtin_bswap32(output_b[3]);
+  sm4_crypt_zvksed_zvkb(RK, input, output);
 
   return( 0 );
 }

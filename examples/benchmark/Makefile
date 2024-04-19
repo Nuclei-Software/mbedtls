@@ -2,7 +2,7 @@ TARGET = benchmark
 
 CORE ?= nx900fd
 #ARCH_EXT ?= _zba_zbb_zbc_zbs_zk_zks
-#ARCH_EXT ?= v_zvbb_zvbc_zvkg_zvkned_zvknhb_zvksed_zvksh
+ARCH_EXT ?= v_zvbb_zvbc_zvkg_zvkned_zvknhb_zvksed_zvksh
 
 NUCLEI_SDK_ROOT ?= ../../../..
 

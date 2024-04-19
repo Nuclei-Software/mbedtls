@@ -85,6 +85,7 @@ typedef struct mbedtls_aes_context
                                      <li>Simplifying key expansion in the 256-bit
                                          case by generating an extra round key.
                                          </li></ul> */
+   uint32_t key_length;
 }
 mbedtls_aes_context;
 

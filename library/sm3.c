@@ -167,6 +167,7 @@ int mbedtls_internal_sm3_process( mbedtls_sm3_context *ctx,
 /*
  * SM3 process buffer
  */
+#if !defined(MBEDTLS_SM3_UPDATE_ALT)
 int mbedtls_sm3_update_ret( mbedtls_sm3_context *ctx,
                             const unsigned char *input,
                             size_t ilen )
@@ -212,7 +213,7 @@ int mbedtls_sm3_update_ret( mbedtls_sm3_context *ctx,
 
     return( 0 );
 }
-
+#endif /* #if !defined(MBEDTLS_SM3_UPDATE_ALT) */
 /*
  * SM3 final digest
  */
