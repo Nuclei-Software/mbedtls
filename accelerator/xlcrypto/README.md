@@ -283,42 +283,42 @@ The features of Nuclei Mbed TLS are listed below:
     | AES-CCM-128           | 9104 KiB/s, 3 cycles/byte                                    | 2315 KiB/s, 12 cycles/byte                                  | 189 KiB/s, 154 cycles/byte    |
     | AES-CCM-192           | 8441 KiB/s, 3 cycles/byte                                    | 2145 KiB/s, 13 cycles/byte                                  | 169 KiB/s, 172 cycles/byte    |
     | AES-CCM-256           | 7886 KiB/s, 3 cycles/byte                                    | 2145 KiB/s, 13 cycles/byte                                  | 153 KiB/s, 191 cycles/byte    |
-    | RSA-2048              | 442  public/s                                                | 442  public/s                                               | 8  public/s                   |
-    | RSA-2048              | 5 private/s                                                  | 5 private/s                                                 | 0 private/s                   |
-    | RSA-4096              | 136  public/s                                                | 136  public/s                                               | 2  public/s                   |
-    | RSA-4096              | 1 private/s                                                  | 1 private/s                                                 | 0 private/s                   |
-    | ECDSA-secp521r1       | 12 sign/s                                                    | 11 sign/s                                                   | 1 sign/s                      |
-    | ECDSA-brainpoolP512r1 | 12 sign/s                                                    | 12 sign/s                                                   | 0 sign/s                      |
-    | ECDSA-secp384r1       | 23 sign/s                                                    | 23 sign/s                                                   | 2 sign/s                      |
-    | ECDSA-brainpoolP384r1 | 23 sign/s                                                    | 23 sign/s                                                   | 0 sign/s                      |
-    | ECDSA-secp256r1       | 52 sign/s                                                    | 52 sign/s                                                   | 5 sign/s                      |
-    | ECDSA-secp256k1       | 51 sign/s                                                    | 50 sign/s                                                   | 4 sign/s                      |
-    | ECDSA-brainpoolP256r1 | 50 sign/s                                                    | 50 sign/s                                                   | 0 sign/s                      |
-    | ECDSA-secp224r1       | 58 sign/s                                                    | 58 sign/s                                                   | 6 sign/s                      |
-    | ECDSA-secp224k1       | 64 sign/s                                                    | 63 sign/s                                                   | 4 sign/s                      |
-    | ECDSA-secp192r1       | 82 sign/s                                                    | 81 sign/s                                                   | 8 sign/s                      |
-    | ECDSA-secp192k1       | 81 sign/s                                                    | 80 sign/s                                                   | 6 sign/s                      |
-    | ECDSA-secp521r1       | 5 verify/s                                                   | 5 verify/s                                                  | 0 verify/s                    |
-    | ECDSA-brainpoolP512r1 | 6 verify/s                                                   | 6 verify/s                                                  | 0 verify/s                    |
-    | ECDSA-secp384r1       | 11 verify/s                                                  | 12 verify/s                                                 | 0 verify/s                    |
-    | ECDSA-brainpoolP384r1 | 11 verify/s                                                  | 12 verify/s                                                 | 0 verify/s                    |
-    | ECDSA-secp256r1       | 28 verify/s                                                  | 28 verify/s                                                 | 1 verify/s                    |
-    | ECDSA-secp256k1       | 26 verify/s                                                  | 26 verify/s                                                 | 1 verify/s                    |
-    | ECDSA-brainpoolP256r1 | 26 verify/s                                                  | 26 verify/s                                                 | 0 verify/s                    |
-    | ECDSA-secp224r1       | 31 verify/s                                                  | 31 verify/s                                                 | 2 verify/s                    |
-    | ECDSA-secp224k1       | 36 verify/s                                                  | 36 verify/s                                                 | 1 verify/s                    |
-    | ECDSA-secp192r1       | 46 verify/s                                                  | 46 verify/s                                                 | 2 verify/s                    |
-    | ECDSA-secp192k1       | 44 verify/s                                                  | 44 verify/s                                                 | 1 verify/s                    |
-    | ECDHE-secp521r1       | 3 full handshake/s                                           | 3 full handshake/s                                          | 0 full handshake/s            |
-    | ECDHE-brainpoolP512r1 | 3 full handshake/s                                           | 3 full handshake/s                                          | 0 full handshake/s            |
-    | ECDHE-secp384r1       | 6 full handshake/s                                           | 6 full handshake/s                                          | 0 full handshake/s            |
-    | ECDHE-brainpoolP384r1 | 6 full handshake/s                                           | 6 full handshake/s                                          | 0 full handshake/s            |
-    | ECDHE-secp256r1       | 15 full handshake/s                                          | 15 full handshake/s                                         | 0 full handshake/s            |
-    | ECDHE-secp256k1       | 15 full handshake/s                                          | 15 full handshake/s                                         | 0 full handshake/s            |
-    | ECDHE-brainpoolP256r1 | 15 full handshake/s                                          | 15 full handshake/s                                         | 0 full handshake/s            |
-    | ECDHE-secp224r1       | 17 full handshake/s                                          | 17 full handshake/s                                         | 1 full handshake/s            |
-    | ECDHE-secp224k1       | 21 full handshake/s                                          | 21 full handshake/s                                         | 0 full handshake/s            |
-    | ECDHE-secp192r1       | 27 full handshake/s                                          | 27 full handshake/s                                         | 1 full handshake/s            |
-    | ECDHE-secp192k1       | 27 full handshake/s                                          | 27 full handshake/s                                         | 0 full handshake/s            |
-    | ECDHE-x25519          | 22 full handshake/s                                          | 22 full handshake/s                                         | 0 full handshake/s            |
-    | ECDHE-x448            | 6 full handshake/s                                           | 6 full handshake/s                                          | 0 full handshake/s            |
+    | RSA-2048              | 441.51  public/s                                             | 441.51  public/s                                            | 8.57  public/s                |
+    | RSA-2048              | 5.58 private/s                                               | 5.58 private/s                                              | 0.15 private/s                |
+    | RSA-4096              | 136.68  public/s                                             | 136.68  public/s                                            | 2.17  public/s                |
+    | RSA-4096              | 1.13 private/s                                               | 1.13 private/s                                              | 0.03 private/s                |
+    | ECDSA-secp521r1       | 11.38 sign/s                                                 | 11.38 sign/s                                                | 1.54 sign/s                   |
+    | ECDSA-brainpoolP512r1 | 11.50 sign/s                                                 | 11.50 sign/s                                                | 0.19 sign/s                   |
+    | ECDSA-secp384r1       | 22.38 sign/s                                                 | 22.38 sign/s                                                | 2.80 sign/s                   |
+    | ECDSA-brainpoolP384r1 | 21.99 sign/s                                                 | 21.99 sign/s                                                | 0.38 sign/s                   |
+    | ECDSA-secp256r1       | 47.74 sign/s                                                 | 47.74 sign/s                                                | 5.06 sign/s                   |
+    | ECDSA-secp256k1       | 46.76 sign/s                                                 | 46.76 sign/s                                                | 3.98 sign/s                   |
+    | ECDSA-brainpoolP256r1 | 43.69 sign/s                                                 | 43.69 sign/s                                                | 0.73 sign/s                   |
+    | ECDSA-secp224r1       | 54.58 sign/s                                                 | 54.58 sign/s                                                | 6.59 sign/s                   |
+    | ECDSA-secp224k1       | 63.24 sign/s                                                 | 63.24 sign/s                                                | 4.78 sign/s                   |
+    | ECDSA-secp192r1       | 78.33 sign/s                                                 | 78.33 sign/s                                                | 8.32 sign/s                   |
+    | ECDSA-secp192k1       | 76.24 sign/s                                                 | 76.24 sign/s                                                | 6.00 sign/s                   |
+    | ECDSA-secp521r1       | 5.45 verify/s                                                | 5.45 verify/s                                               | 0.40 verify/s                 |
+    | ECDSA-brainpoolP512r1 | 5.81 verify/s                                                | 5.81 verify/s                                               | 0.04 verify/s                 |
+    | ECDSA-secp384r1       | 11.30 verify/s                                               | 11.30 verify/s                                              | 0.76 verify/s                 |
+    | ECDSA-brainpoolP384r1 | 11.29 verify/s                                               | 11.29  verify/s                                             | 0.08 verify/s                 |
+    | ECDSA-secp256r1       | 26.08 verify/s                                               | 26.08 verify/s                                              | 1.42 verify/s                 |
+    | ECDSA-secp256k1       | 24.77 verify/s                                               | 24.77 verify/s                                              | 1.17 verify/s                 |
+    | ECDSA-brainpoolP256r1 | 25.95 verify/s                                               | 25.95 verify/s                                              | 0.18 verify/s                 |
+    | ECDSA-secp224r1       | 29.67 verify/s                                               | 29.67 verify/s                                              | 1.95 verify/s                 |
+    | ECDSA-secp224k1       | 34.17 verify/s                                               | 34.17 verify/s                                              | 1.38 verify/s                 |
+    | ECDSA-secp192r1       | 43.78 verify/s                                               | 43.78 verify/s                                              | 2.52 verify/s                 |
+    | ECDSA-secp192k1       | 41.32 verify/s                                               | 41.32 verify/s                                              | 1.75 verify/s                 |
+    | ECDHE-secp521r1       | 3.25 full handshake/s                                        | 3.25 full handshake/s                                       | 0.21 full handshake/s         |
+    | ECDHE-brainpoolP512r1 | 3.33 full handshake/s                                        | 3.33 full handshake/s                                       | 0.02 full handshake/s         |
+    | ECDHE-secp384r1       | 6.74 full handshake/s                                        | 6.74 full handshake/s                                       | 0.40 full handshake/s         |
+    | ECDHE-brainpoolP384r1 | 6.58 full handshake/s                                        | 6.58 full handshake/s                                       | 0.04 full handshake/s         |
+    | ECDHE-secp256r1       | 15.72 full handshake/s                                       | 15.72 full handshake/s                                      | 0.78 full handshake/s         |
+    | ECDHE-secp256k1       | 15.14 full handshake/s                                       | 15.14 full handshake/s                                      | 0.61 full handshake/s         |
+    | ECDHE-brainpoolP256r1 | 15.41 full handshake/s                                       | 15.41 full handshake/s                                      | 0.09 full handshake/s         |
+    | ECDHE-secp224r1       | 17.99 full handshake/s                                       | 17.99 full handshake/s                                      | 1.06 full handshake/s         |
+    | ECDHE-secp224k1       | 21.63 full handshake/s                                       | 21.63 full handshake/s                                      | 0.73 full handshake/s         |
+    | ECDHE-secp192r1       | 27.07 full handshake/s                                       | 27.07 full handshake/s                                      | 1.36 full handshake/s         |
+    | ECDHE-secp192k1       | 25.96 full handshake/s                                       | 25.96 full handshake/s                                      | 0.92 full handshake/s         |
+    | ECDHE-x25519          | 22.61 full handshake/s                                       | 22.61 full handshake/s                                      | 0.46 full handshake/s         |
+    | ECDHE-x448            | 6.64 full handshake/s                                        | 6.64 full handshake/s                                       | 0.19 full handshake/s         |
