@@ -167,7 +167,7 @@ do {                                                                    \
     {                                                                   \
         tsc_end = __get_rv_cycle();                                     \
         mbedtls_printf( "%llu KiB/s, %llu cycles/byte\n",               \
-                         ( jj * BUFSIZE ) * SystemCoreClock / (( tsc_end - tsc ) * 1024 ) ,            \
+                         ( (uint64_t)jj * BUFSIZE ) * (uint64_t)SystemCoreClock / (( tsc_end - tsc ) * 1024 ) ,            \
                          ( tsc_end - tsc )                              \
                          / ( jj * BUFSIZE ) );                          \
     }                                                                   \
@@ -242,8 +242,8 @@ do {                                                                    \
     else                                                                \
     {                                                                   \
         tsc_end = __get_rv_cycle();                                     \
-        mbedtls_printf( "%llu  " TYPE "/s\n",               			\
-                         SystemCoreClock / ( tsc_end - tsc ) );         \
+        mbedtls_printf( "%f  " TYPE "/s\n",                             \
+                         SystemCoreClock * 1.0f / ( tsc_end - tsc )  ); \
     }                                                                   \
 } while( 0 )
 
