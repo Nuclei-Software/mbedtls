@@ -13,6 +13,12 @@ category: mbedtls baremetal application
 license: Apache-2.0
 homepage:
 
+## Package Dependency
+dependencies:
+  - name: sdk-nuclei_sdk
+    version:
+  - name: mwp-libmbedtls
+
 ## Package Configurations
 configuration:
   app_commonflags:
