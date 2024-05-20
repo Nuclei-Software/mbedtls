@@ -4,7 +4,7 @@ We provided different optimized accelerator implemention for MbedTLS for Nuclei 
 
 - **scalar_k**: Optimized for RISC-V Scalar K extension, which is supported by Nuclei RISC-V CPU IP.
 - **scalar_k**: Optimized for RISC-V Vector K extension, which is supported by Nuclei RISC-V CPU IP, required at least `Zve64x` together with Vector K extension.
-- **xlcrypto**: Optimized for Nuclei Crypto Engine IP, which can be used with Nuclei RISC-V CPU IP.
+- **xlcrypto**: Optimized for Nuclei Crypto Engine IP, which can be used with Nuclei RISC-V CPU IP, see [xlcrypto/README.md](xlcrypto/README.md).
 
 For how to use the accelerated implementation, you can do this like this in your application Makefile of Nuclei SDK:
 
