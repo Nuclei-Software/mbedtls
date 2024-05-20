@@ -55,7 +55,7 @@ int mbedtls_sm4_setkey_enc( mbedtls_sm4_context *ctx,
                             unsigned int keybits )
 {
   uint32_t *RK = ctx->rk;
-  uint32_t rkey_dec[SM4_RKEY_WORDS];
+  uint32_t rkey_dec[32];
 
   if( keybits != 128 )
      return MBEDTLS_ERR_SM4_INVALID_KEY_LENGTH;
@@ -75,7 +75,7 @@ int mbedtls_sm4_setkey_dec( mbedtls_sm4_context *ctx,
                             unsigned int keybits )
 {
   uint32_t *RK = ctx->rk;
-  uint32_t rkey_enc[SM4_RKEY_WORDS];
+  uint32_t rkey_enc[32];
 
   if( keybits != 128 )
     return MBEDTLS_ERR_SM4_INVALID_KEY_LENGTH;
@@ -93,8 +93,8 @@ int mbedtls_sm4_setkey_dec( mbedtls_sm4_context *ctx,
 
 int mbedtls_sm4_crypt_ecb( mbedtls_sm4_context *ctx,
                     int mode,
-                    const unsigned char input[SM4_BLOCK_SIZE],
-                    unsigned char output[SM4_BLOCK_SIZE] )
+                    const unsigned char input[16],
+                    unsigned char output[16] )
 {
   uint32_t *RK = ctx->rk;
 

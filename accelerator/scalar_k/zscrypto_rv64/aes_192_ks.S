@@ -62,6 +62,8 @@ aes_192_enc_key_schedule:       // a0 - uint32_t rk [AES_192_RK_WORDS]
 aes_192_dec_key_schedule:       // a0 - uint32_t rk [AES_192_RK_WORDS]
                                 // a1 - uint8_t  ck [AES_192_CK_BYTE ]
 
+    #undef RKP
+    #undef RKE
     #define RKP t0
     #define RKE t1
 

@@ -36,11 +36,13 @@ configuration:
 
 setconfig:
   - config: nuclei_archext
-    value: _zba_zbb_zbc_zbs_zk_zks
+    value: _zk_zks
     condition: $( ${mbedtls_acc} == "scalar_k" )
   - config: nuclei_archext
-    value: _zve64x_zvbb_zvbc_zvkg_zvkned_zvknhb_zvksed_zvksh
+    value: _zve64x_zvbb_zvkg_zvkned_zvknhb_zvksed_zvksh
     condition: $( ${mbedtls_acc} == "vector_k" )
+  - config: stdclib
+    value: newlib_full
 
 ## Source Code Management
 codemanage:

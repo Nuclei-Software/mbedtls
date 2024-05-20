@@ -150,7 +150,9 @@ int mbedtls_internal_sm3_process( mbedtls_sm3_context *ctx,
                                   const unsigned char data[64] )
 
 {
-    sm3_compress_block(ctx->state, data);
+    uint32_t *p = (uint32_t *)data;
+
+    sm3_compress_block(ctx->state, p);
 
     return( 0 );
 }

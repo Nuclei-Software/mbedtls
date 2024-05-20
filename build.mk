@@ -11,7 +11,7 @@ COMMON_FLAGS += -DMBEDTLS_ACC -DMBEDTLS_ACC_$(call uc, $(MBEDTLS_ACC))
 endif
 
 C_SRCDIRS += $(MBEDTLS_ROOT)/library \
-		$(MBEDTLS_ROOT)/tests/src
+             $(MBEDTLS_ROOT)/tests/src
 
 ifeq ($(MBEDTLS_ACC),xlcrypto)
 C_SRCDIRS += $(MBEDTLS_ROOT)/accelerator/xlcrypto
@@ -22,7 +22,7 @@ ifeq ($(MBEDTLS_ACC),scalar_k)
 C_SRCDIRS += $(MBEDTLS_ROOT)/accelerator/scalar_k
 INCDIRS += $(MBEDTLS_ROOT)/accelerator/scalar_k
 COMMON_FLAGS += -D__ZSCRYPTO -DRVINTRIN_EMULATE=1
-ARCH_EXT ?= _zba_zbb_zbc_zbs_zk_zks
+ARCH_EXT ?= _zk_zks
 ifneq ($(findstring x, $(CORE)),)
 C_SRCDIRS += $(MBEDTLS_ROOT)/accelerator/scalar_k/zscrypto_rv64
 ASM_SRCDIRS += $(MBEDTLS_ROOT)/accelerator/scalar_k/zscrypto_rv64
@@ -37,7 +37,7 @@ C_SRCDIRS += $(MBEDTLS_ROOT)/accelerator/vector_k
 ASM_SRCDIRS += $(MBEDTLS_ROOT)/accelerator/vector_k
 INCDIRS += $(MBEDTLS_ROOT)/accelerator/vector_k
 # require at least _zve64x for vector k, so _zve32* is not supported
-ARCH_EXT ?= _zve64x_zvbb_zvbc_zvkg_zvkned_zvknhb_zvksed_zvksh
+ARCH_EXT ?= _zve64x_zvbb_zvkg_zvkned_zvknhb_zvksed_zvksh
 endif
 
 INCDIRS += $(MBEDTLS_ROOT)/include $(MBEDTLS_ROOT)/library $(MBEDTLS_ROOT)/tests/include

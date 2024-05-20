@@ -67,6 +67,8 @@ aes_256_enc_key_schedule:       // a0 - uint32_t rk [AES_256_RK_WORDS]
 aes_256_dec_key_schedule:       // a0 - uint32_t rk [AES_256_RK_WORDS]
                                 // a1 - uint8_t  ck [AES_256_CK_BYTE ]
 
+    #undef RKP
+    #undef RKE
     #define RKP t0
     #define RKE t1
 
