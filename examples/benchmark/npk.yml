@@ -31,6 +31,8 @@ setconfig:
     value: scalar_k
   - config: nuclei_core
     value: nx900fd
+  - config: stdclib
+    value: newlib_full
 
 ## Source Code Management
 codemanage:

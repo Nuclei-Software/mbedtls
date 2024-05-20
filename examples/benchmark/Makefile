@@ -16,7 +16,7 @@ STDCLIB ?= newlib_full
 # If you want to override it, you need to pass extra arch ext list below
 # scalar k require ARCH_EXT ?= _zk_zks
 # vector k require ARCH_EXT ?= _zve64x_zvbb_zvkg_zvkned_zvknhb_zvksed_zvksh
-MBEDTLS_ACC ?= vector_k
+MBEDTLS_ACC ?= scalar_k
 
 SRCDIRS = .
 

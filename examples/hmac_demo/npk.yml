@@ -31,6 +31,8 @@ setconfig:
     value: xlcrypto
   - config: nuclei_core
     value: n300fd
+  - config: stdclib
+    value: newlib_full
 
 ## Source Code Management
 codemanage:

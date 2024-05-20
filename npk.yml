@@ -41,8 +41,6 @@ setconfig:
   - config: nuclei_archext
     value: _zve64x_zvbb_zvkg_zvkned_zvknhb_zvksed_zvksh
     condition: $( ${mbedtls_acc} == "vector_k" )
-  - config: stdclib
-    value: newlib_full
 
 ## Source Code Management
 codemanage:
