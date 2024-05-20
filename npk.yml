@@ -1,9 +1,9 @@
 ## Package Base Information
 name: mwp-libmbedtls
 owner: nuclei
-description: mbedtls v3.3.0 accelerated by nuclei engine
+description: mbedtls v3.3.0 library optimized for Nuclei CPU
 type: mwp
-version: 0.1.0
+version: 0.2.0
 keywords:
   - library
   - mbedtls
@@ -15,19 +15,58 @@ dependencies:
   - name: sdk-nuclei_sdk
 
 packinfo:
-  name: mbedtls accelerated by nuclei HASH/CRYP/ACRYP engine
+  name: mbedtls accelerated by Nuclei Crypto engine or Scalar/Vector K extension
   doc:
     website: https://github.com/Nuclei-Software/mbedtls
     usermanual:
 
+configuration:
+  mbedtls_acc:
+    default_value: scalar_k
+    type: choice
+    tips: "Select proper mbedtls accerator library"
+    description: MbedTLS Accelator Library
+    choices:
+      - name: scalar_k
+        description: "scalar_k: Accelerate MbedTLS Library using RISC-V Scalar K extension"
+      - name: vector_k
+        description: "vector_k: Accelerate MbedTLS Library using RISC-V Vector K extension"
+      - name: xlcrypto
+        description: "xlcrypto: Accelerate MbedTLS Library using Nuclei Crypto Engine"
+
+setconfig:
+  - config: nuclei_archext
+    value: _zba_zbb_zbc_zbs_zk_zks
+    condition: $( ${mbedtls_acc} == "scalar_k" )
+  - config: nuclei_archext
+    value: _zve64x_zvbb_zvbc_zvkg_zvkned_zvknhb_zvksed_zvksh
+    condition: $( ${mbedtls_acc} == "vector_k" )
 
 ## Source Code Management
 codemanage:
   installdir: mbedtls
   copyfiles:
-    - path: ["library/", "accelerator/xlcrypto/", "tests/src/", "include/", "tests/include" ]
+    - path: ["library/", "tests/src/", "include/", "tests/include" ]
+    - path: ["accelerator/${mbedtls_acc}/" ]
   incdirs:
-    - path: ["include/", "library/", "tests/include", "accelerator/xlcrypto"]
+    - path: ["include/", "library/", "tests/include"]
+    - path: ["accelerator/${mbedtls_acc}/" ]
   # required latest Nuclei Studio NPK to support excludefiles
   excludefiles:
     - path: ["library/entropy*.c", "library/timing.c", "library/net_sockets.c", "library/x509_crt.c"]
+    # exclude unneeded files for scalar_k accelerated library
+    - path: ["accelerator/scalar_k/zscrypto_rv32"]
+      condition: $( contains(${nuclei_core.arch},"rv64") )
+    - path: ["accelerator/scalar_k/zscrypto_rv64"]
+      condition: $( contains(${nuclei_core.arch},"rv32") )
+
+## Build Configuration
+buildconfig:
+  - type: common
+    common_defines:
+      - defines: MBEDTLS_ACC
+      - defines: MBEDTLS_ACC_$(upper(${mbedtls_acc}))
+      - defines: __ZSCRYPTO
+        condition: $( ${mbedtls_acc} == "scalar_k" )
+      - defines: RVINTRIN_EMULATE=1
+        condition: $( ${mbedtls_acc} == "scalar_k" )

@@ -1,8 +1,8 @@
 ## Package Base Information
 name: app-mbedtls_benchmark
 owner: nuclei
-version: 0.1.0
-description: mbedtls benchmark using nuclei crypto engine
+version: 0.2.0
+description: mbedtls benchmark for nuclei hardware
 type: app
 keywords:
   - baremetal
@@ -27,7 +27,10 @@ configuration:
 
 ## Set Configuration for other packages
 setconfig:
-
+  - config: mbedtls_acc
+    value: scalar_k
+  - config: nuclei_core
+    value: nx900fd
 
 ## Source Code Management
 codemanage:

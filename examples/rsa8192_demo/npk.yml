@@ -1,7 +1,7 @@
 ## Package Base Information
 name: app-mbedtls_rsa8192
 owner: nuclei
-version: 0.1.0
+version: 0.2.0
 description: mbedtls rsa8192 using nuclei ACRYP engine
 type: app
 keywords:
@@ -27,7 +27,10 @@ configuration:
 
 ## Set Configuration for other packages
 setconfig:
-
+  - config: mbedtls_acc
+    value: xlcrypto
+  - config: nuclei_core
+    value: n300fd
 
 ## Source Code Management
 codemanage:

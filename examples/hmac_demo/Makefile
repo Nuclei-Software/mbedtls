@@ -1,10 +1,6 @@
 TARGET = hmac_demo
 
-# NOTE:
-#
-# This need to work with HSM solution
-
-CORE ?= nx900fd
+CORE ?= n300fd
 
 NUCLEI_SDK_ROOT ?= ../../../..
 

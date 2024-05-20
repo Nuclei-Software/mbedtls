@@ -4,7 +4,7 @@ TARGET = hsm_kernel_int_mbedtls
 #
 # This need to work with HSM solution
 
-CORE ?= nx900fd
+CORE ?= n300fd
 
 NUCLEI_SDK_ROOT ?= ../../../..
 

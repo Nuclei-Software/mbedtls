@@ -1,7 +1,7 @@
 ## Package Base Information
 name: app-mbedtls_hsm_kernel_cmd_sha1
 owner: nuclei
-version: 0.1.0
+version: 0.2.0
 description: mbedtls hsm kernel mailbox HASH sha1
 type: app
 keywords:
@@ -28,7 +28,10 @@ configuration:
 
 ## Set Configuration for other packages
 setconfig:
-
+  - config: mbedtls_acc
+    value: xlcrypto
+  - config: nuclei_core
+    value: n300fd
 
 ## Source Code Management
 codemanage:
