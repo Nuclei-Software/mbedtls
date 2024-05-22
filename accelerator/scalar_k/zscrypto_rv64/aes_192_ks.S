@@ -54,6 +54,13 @@ aes_192_enc_key_schedule:       // a0 - uint32_t rk [AES_192_RK_WORDS]
 
     ret
 
+    #undef RKP
+    #undef CKP
+    #undef T0
+    #undef RK0
+    #undef RK1
+    #undef RK2
+
 .endfunc
 
 
@@ -62,8 +69,6 @@ aes_192_enc_key_schedule:       // a0 - uint32_t rk [AES_192_RK_WORDS]
 aes_192_dec_key_schedule:       // a0 - uint32_t rk [AES_192_RK_WORDS]
                                 // a1 - uint8_t  ck [AES_192_CK_BYTE ]
 
-    #undef RKP
-    #undef RKE
     #define RKP t0
     #define RKE t1
 
@@ -85,3 +90,6 @@ aes_192_dec_key_schedule:       // a0 - uint32_t rk [AES_192_RK_WORDS]
     addi sp, sp, 32
 
     ret
+
+    #undef RKP
+    #undef RKE

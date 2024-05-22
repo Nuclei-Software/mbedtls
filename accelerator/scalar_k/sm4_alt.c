@@ -58,7 +58,7 @@ int mbedtls_sm4_setkey_enc( mbedtls_sm4_context *ctx,
 
     if( keybits != 128 )
         return MBEDTLS_ERR_SM4_INVALID_KEY_LENGTH;
-    sm4_key_schedule_enc(RK, key);
+    sm4_key_schedule_enc(RK, (uint8_t *)key);
 
     return 0;
 
@@ -77,7 +77,7 @@ int mbedtls_sm4_setkey_dec( mbedtls_sm4_context *ctx,
 
     if( keybits != 128 )
         return MBEDTLS_ERR_SM4_INVALID_KEY_LENGTH;
-    sm4_key_schedule_dec(RK, key);
+    sm4_key_schedule_dec(RK, (uint8_t *)key);
     return 0;
 
 }
@@ -95,7 +95,7 @@ int mbedtls_sm4_crypt_ecb( mbedtls_sm4_context *ctx,
   uint32_t *RK = ctx->rk;
   ( (void) mode );                        // parameter not used
 
-  sm4_block_enc_dec(output, input, RK);
+  sm4_block_enc_dec(output, (uint8_t *)input, RK);
 
   return( 0 );
 }
