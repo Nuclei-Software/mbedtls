@@ -51,16 +51,6 @@
 #include <stdio.h>
 #include <string.h>
 
-/* HMAC hardware acceleration algorithm, user can choose one to run HMAC.
- * MBEDTLS_MD_MD5
- * MBEDTLS_MD_SHA1
- * MBEDTLS_MD_SHA224
- * MBEDTLS_MD_SHA256
- * MBEDTLS_MD_SHA384
- * MBEDTLS_MD_SHA512
- */
-#define HMAC_ALGO       MBEDTLS_MD_SHA256
-
 #define HMAC_CMP_FAIL   (-1)
 
 /* If the build options we need are not enabled, compile a placeholder. */
@@ -247,10 +237,9 @@ static int hmac_res_compare(unsigned char *output, int len, mbedtls_md_type_t al
  * This function demonstrates computation of the HMAC of two messages using
  * the multipart API.
  */
-int hmac_demo(void)
+int hmac_demo(mbedtls_md_type_t alg)
 {
     int ret;
-    const mbedtls_md_type_t alg = HMAC_ALGO;
     unsigned char out[MBEDTLS_MD_MAX_SIZE]; // safe but not optimal
 
     mbedtls_md_context_t ctx;
@@ -260,6 +249,11 @@ int hmac_demo(void)
     /* prepare context and load key */
     // the last argument to setup is 1 to enable HMAC (not just hashing)
     const mbedtls_md_info_t *info = mbedtls_md_info_from_type( alg );
+    if (info == NULL) {
+        printf("MD Algorithm not supported: %d\n", alg);
+        return MBEDTLS_ERR_MD_BAD_INPUT_DATA;
+    }
+
     CHK( mbedtls_md_setup( &ctx, info, 1 ) );
     CHK( mbedtls_md_hmac_starts( &ctx, key_bytes, sizeof( key_bytes ) ) );
 
@@ -268,10 +262,6 @@ int hmac_demo(void)
     CHK( mbedtls_md_hmac_update( &ctx, msg1_part2, sizeof( msg1_part2 ) ) );
     CHK( mbedtls_md_hmac_finish( &ctx, out ) );
     CHK( hmac_res_compare( out, (int)mbedtls_md_get_size( info ), alg, 0) );
-    // printf("mbedtls_md_get_size( info ): %d\n",mbedtls_md_get_size( info ));
-    // for( size_t i = 0; i < mbedtls_md_get_size( info ); i++ ) {
-    //     printf( "%02x\n", out[i] );
-    // }
 
     /* compute HMAC(key, msg2_part1 | msg2_part2) */
     CHK( mbedtls_md_hmac_reset( &ctx ) ); // prepare for new operation
@@ -279,10 +269,6 @@ int hmac_demo(void)
     CHK( mbedtls_md_hmac_update( &ctx, msg2_part2, sizeof( msg2_part2 ) ) );
     CHK( mbedtls_md_hmac_finish( &ctx, out ) );
     CHK( hmac_res_compare( out, (int)mbedtls_md_get_size( info ), alg, 1 ) );
-    // printf("mbedtls_md_get_size( info ): %d\n",mbedtls_md_get_size( info ));
-    // for( size_t i = 0; i < mbedtls_md_get_size( info ); i++ ) {
-    //     printf( "%02x\n", out[i] );
-    // }
 
 exit:
     mbedtls_md_free( &ctx );
@@ -291,14 +277,40 @@ exit:
     return( ret );
 }
 
+const char* get_algo_name(mbedtls_md_type_t alg) {
+    switch (alg) {
+        case MBEDTLS_MD_MD5: return "MD5";
+        case MBEDTLS_MD_SHA1: return "SHA1";
+        case MBEDTLS_MD_SHA224: return "SHA224";
+        case MBEDTLS_MD_SHA256: return "SHA256";
+        case MBEDTLS_MD_SHA384: return "SHA384";
+        case MBEDTLS_MD_SHA512: return "SHA512";
+        default: return "Unknown";
+    }
+}
+
 int main(void)
 {
-    int ret;
+    int ret = 0;
+    mbedtls_md_type_t algos[] = {
+        MBEDTLS_MD_MD5,
+        MBEDTLS_MD_SHA1,
+        MBEDTLS_MD_SHA224,
+        MBEDTLS_MD_SHA256,
+        MBEDTLS_MD_SHA384,
+        MBEDTLS_MD_SHA512
+    };
 
-    CHK( hmac_demo() );
+    for(size_t i = 0; i < sizeof(algos) / sizeof(algos[0]); i++) {
+        printf("Testing MD algorithm: %s\n", get_algo_name(algos[i]));
+        ret = hmac_demo(algos[i]);
+        if (ret != 0) {
+            printf("MD Algorithm %s failed\n", get_algo_name(algos[i]));
+            return EXIT_FAILURE;
+        }
+    }
 
-exit:
-    return( ret == 0 ? EXIT_SUCCESS : EXIT_FAILURE );
+    return EXIT_SUCCESS;
 }
 
 #endif
