@@ -4,7 +4,9 @@
 
 This directory contains benchmark example files.
 
-This example describes benchmark testing process and exports benchmark result of each crypto algorithm. Each crypto algorithm can be accelerated by Nuclei hardware engine, they are as follows:
+This example describes benchmark testing process and exports benchmark result of each crypto algorithm.
+
+Accelerated by  Nuclei Crypto Engine IP(**xlcrypto**), algorithms are as follows, please refer to `mbedtls/accelerator/xlcrypto/README.md` for more details:
 
 - MD5
 - SHA1
@@ -18,23 +20,49 @@ This example describes benchmark testing process and exports benchmark result of
 - ECDSA
 - ECDH
 
-You can select the hardware acceleration of the corresponding algorithm by enabling the acceleration macros in `acc_config.h`, compile and run the example and compare hardware and software benchmark result. Please refer to `mbedtls/accelerator/xlcrypto/README.md` for more details.
+Accelerated by  RISC-V K extensions(**scalar_k** and **vector_k**), algorithms are as follows, please refer to `mbedtls/accelerator/scalar_k/README.md` for more details:
+
+- SHA224/SHA256
+- SHA384/SHA512
+- AES-CBC
+- AES-GCM
+- AES-CCM
+- SM3
+- SM4 CBC
 
 ## How to run this application
 
-    # Assume that you can set up the Tools and Nuclei SDK environment
-    # cd to the cuttent directory
-    cd examples/benchmark
-    # Clean the application first
-    make SOC=ns DOWNLOAD=sram clean
-    # Build and upload the application
-    make SOC=ns DOWNLOAD=sram upload
+```sh
+# Assume that you can set up the Tools and Nuclei SDK environment
+$ cd examples/benchmark
 
-## Expected output as below:(HASH/CRYP with UDMA accelerated)
+# Running on Nuclei Crypto Engine IP, assume that you use ns subsystem
+# Clean the application first
+$ make SOC=ns CORE=n300 MBEDTLS_ACC=xlcrypto DOWNLOAD=sram clean
+# Build and upload the application
+$ make SOC=ns CORE=n300 MBEDTLS_ACC=xlcrypto DOWNLOAD=sram upload
 
-Nuclei SDK Build Time: Dec  8 2022, 18:01:33
-Download Mode: SRAM
-CPU Frequency 32000403 Hz
+# Running on RISC-V scalar_k extension
+# Clean the application first
+$ make SOC=evalsoc CORE=nx900 MBEDTLS_ACC=scalar_k DOWNLOAD=sram clean
+# Build and upload the application
+$ make SOC=evalsoc CORE=nx900 MBEDTLS_ACC=scalar_k DOWNLOAD=sram upload
+
+# Running on RISC-V vector_k extension
+# Clean the application first
+$ make SOC=evalsoc CORE=nx900 MBEDTLS_ACC=vector_k DOWNLOAD=sram clean
+# Build and upload the application
+$ make SOC=evalsoc CORE=nx900 MBEDTLS_ACC=vector_k DOWNLOAD=sram upload
+```
+
+## Expected output as below:
+
+**HASH/CRYP with UDMA accelerated:**
+
+~~~log
+    Nuclei SDK Build Time: Dec  8 2022, 18:01:33
+    Download Mode: SRAM
+    CPU Frequency 32000403 Hz
 
     MD5                      :  14562 KiB/s, 2 cycles/byte
     SHA-1                    :  13464 KiB/s, 2 cycles/byte
@@ -90,3 +118,4 @@ CPU Frequency 32000403 Hz
     ECDHE-secp192k1          :  27  full handshake/s
     ECDHE-x25519             :  22  full handshake/s
     ECDHE-x448               :  6  full handshake/s
+~~~

@@ -1,5 +1,7 @@
 # README for hmac_demo
 
+**Note:** This demo only support Nuclei Crypto Engine IP,  not risc-v K extensions.
+
 ## Introduction
 
 This directory contains hmac_demo example files. This example describles two hmac process and outputs success or not.
@@ -19,17 +21,20 @@ You can select the hardware acceleration of the corresponding algorithm by enabl
 
 ## How to run this application
 
+~~~shell
     # Assume that you can set up the Tools and Nuclei SDK environment
     # Assume that you use ns subsystem
     # cd to the cuttent directory
-    cd examples/hmac_demo
+    $ cd examples/hmac_demo
     # Clean the application first
-    make SOC=ns DOWNLOAD=ilm clean
+    $ make SOC=ns CORE=n300 MBEDTLS_ACC=xlcrypto DOWNLOAD=ilm clean
     # Build and upload the application
-    make SOC=ns DOWNLOAD=ilm upload
+    $ make SOC=ns CORE=n300 MBEDTLS_ACC=xlcrypto DOWNLOAD=ilm upload
+~~~
 
 ## Expected output as below
 
+~~~log
     Nuclei SDK Build Time: May 23 2024, 16:07:21
     Download Mode: ILM
     CPU Frequency 30000031 Hz
@@ -52,3 +57,4 @@ You can select the hardware acceleration of the corresponding algorithm by enabl
     Testing MD algorithm: SHA512
     0 HMAC success
     1 HMAC success
+~~~

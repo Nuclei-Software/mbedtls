@@ -1,5 +1,7 @@
 # README for rsa8192_demo
 
+**Note:** This demo only support Nuclei Crypto Engine IP,  not risc-v K extensions.
+
 ## Introduction
 
 This directory contains rsa8192_demo example files. This demo describes PKCS#1 encryption, decryption and signature verification for RSA8192.
@@ -10,26 +12,31 @@ You can select the hardware acceleration of the corresponding algorithm by enabl
 
 ## How to run this application
 
-    # Assume that you can set up the Tools and Nuclei SDK environment
-    # Assume that you use ns subsystem
-    # cd to the cuttent directory
-    cd examples/rsa8192_demo
-    # Clean the application first
-    make SOC=ns DOWNLOAD=ilm clean
-    # Build and upload the application
-    make SOC=ns DOWNLOAD=ilm upload
+```shell
+# Assume that you can set up the Tools and Nuclei SDK environment
+# Assume that you use ns subsystem
+# cd to the cuttent directory
+$ cd examples/rsa8192_demo
+# Clean the application first
+$ make SOC=ns CORE=n300 MBEDTLS_ACC=xlcrypto DOWNLOAD=ilm clean
+# Build and upload the application
+$ make SOC=ns CORE=n300 MBEDTLS_ACC=xlcrypto DOWNLOAD=ilm upload
+```
 
 ## Expected output as below
 
-    Nuclei SDK Build Time: Dec 23 2022, 15:21:38
-    Download Mode: ILM
-    CPU Frequency 32000416 Hz
-    RSA8192 key validation: passed
-    PKCS#1 encryption : passed
-    PKCS#1 decryption : passed
-    PKCS#1 data sign  : passed
-    PKCS#1 sig. verify: passed
+```log
+Nuclei SDK Build Time: Dec 23 2022, 15:21:38
+Download Mode: ILM
+CPU Frequency 32000416 Hz
+RSA8192 key validation: passed
+PKCS#1 encryption : passed
+PKCS#1 decryption : passed
+PKCS#1 data sign  : passed
+PKCS#1 sig. verify: passed
 
-    Executed 1 test suites
+Executed 1 test suites
 
-    [ All tests PASS ]
+[ All tests PASS ]
+```
+

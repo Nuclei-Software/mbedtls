@@ -184,14 +184,14 @@ The features of Nuclei Mbed TLS are listed below:
 
    - If you want to build your application, you can easily run this command:
 
-     ```c
-     make CORE=n300 DOWNLOAD=sram all
+     ```shell
+     $ make CORE=n300 MBEDTLS_ACC=xlcrypto DOWNLOAD=sram all
      ```
 
    - If you want to upload your application, you can easily run this command:
 
-     ```c
-     make CORE=n300 DOWNLOAD=sram upload
+     ```shell
+     $ make CORE=n300 MBEDTLS_ACC=xlcrypto DOWNLOAD=sram upload
      ```
 
    - If you want to use UART terminal tool to view the application result, you can choose `screen` or `minicom` in Linux, `teraterm` in Windows, the default UART baudrate we use is `115200`. For example, test all HASH-related algorithm in *Components/mbedtls/examples/selftest* as follows:

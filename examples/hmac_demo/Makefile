@@ -10,13 +10,6 @@ MIDDLEWARE := mbedtls
 STDCLIB ?= newlib_full
 
 # Choose mbedtls accelerator
-# scalar_k/vector_k/xlcrypto
-# when scalar_k or vector_k is selected,
-# ARCH_EXT will default provide a required arch controlled by mbedtls/build.mk
-# If you want to override it, you need to pass extra arch ext list below
-# scalar k require ARCH_EXT ?= _zba_zbb_zbc_zbs_zk_zks
-# vector k require ARCH_EXT ?= _zve64x_zvbb_zvbc_zvkg_zvkned_zvknhb_zvksed_zvksh
-#
 # NOTE: this example only works with xlcrypto
 MBEDTLS_ACC ?= xlcrypto
 

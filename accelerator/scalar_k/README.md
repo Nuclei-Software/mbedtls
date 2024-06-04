@@ -8,7 +8,7 @@ Mbed TLS is a C library that implements cryptographic primitives, X.509 certific
 
 **RISC-V K extensions：** include scalar and vector cryptographic extensions, is used to improve the speed of cryptography algorithms and reduce the size of programs.
 
-**Scalar K:**  using general-purpose X registers, so it is lightweight and suitable for RV32 and RV64
+**Scalar K:**  using general-purpose X registers, so it is lightweight and suitable for RV32 and RV64  
 **Vector K:** based on the Vector registers, designed to be highly performant, with large application and server-class cores being the main target
 
 The following crypto algorithms are accelerated：
@@ -79,34 +79,34 @@ The features of Nuclei Mbed TLS are listed below:
 
 - Each `examples/xxx/mbedtls_config.h` includes its own `acc_rvk_config.h`. You can enable the  macros in `examples/xxx/acc_rvk_config.h` to enable risc-v K extension in `accelerator/scalar_k/xxx_alt.c` or `accelerator/vector_k/xxx_alt.c`,  disable it thus turning to software implement in `library/xxx.c`. The macros are as follows:
 
-~~~makefile
-#define MBEDTLS_AES_SETKEY_ENC_ALT
-#define MBEDTLS_AES_SETKEY_DEC_ALT
-#define MBEDTLS_AES_ENCRYPT_ALT
-#define MBEDTLS_AES_DECRYPT_ALT
+  ~~~makefile
+  #define MBEDTLS_AES_SETKEY_ENC_ALT
+  #define MBEDTLS_AES_SETKEY_DEC_ALT
+  #define MBEDTLS_AES_ENCRYPT_ALT
+  #define MBEDTLS_AES_DECRYPT_ALT
 
-#if defined(MBEDTLS_ACC_VECTOR_K)
-#define MBEDTLS_AES_CBC_ALT
-#endif
+  #if defined(MBEDTLS_ACC_VECTOR_K)
+  #define MBEDTLS_AES_CBC_ALT
+  #endif
 
-#define MBEDTLS_SHA256_PROCESS_ALT
-#define MBEDTLS_SHA512_PROCESS_ALT
+  #define MBEDTLS_SHA256_PROCESS_ALT
+  #define MBEDTLS_SHA512_PROCESS_ALT
 
-#if defined(MBEDTLS_ACC_VECTOR_K)
-#define MBEDTLS_SHA256_UPDATE_ALT
-#define MBEDTLS_SHA512_UPDATE_ALT
-#endif
+  #if defined(MBEDTLS_ACC_VECTOR_K)
+  #define MBEDTLS_SHA256_UPDATE_ALT
+  #define MBEDTLS_SHA512_UPDATE_ALT
+  #endif
 
-#define MBEDTLS_SM3_PROCESS_ALT
+  #define MBEDTLS_SM3_PROCESS_ALT
 
-#if defined(MBEDTLS_ACC_VECTOR_K)
-#define MBEDTLS_SM3_UPDATE_ALT
-#endif
+  #if defined(MBEDTLS_ACC_VECTOR_K)
+  #define MBEDTLS_SM3_UPDATE_ALT
+  #endif
 
-#define MBEDTLS_SM4_SETKEY_ENC_ALT
-#define MBEDTLS_SM4_SETKEY_DEC_ALT
-#define MBEDTLS_SM4_CRYPT_ECB_ALT
-~~~
+  #define MBEDTLS_SM4_SETKEY_ENC_ALT
+  #define MBEDTLS_SM4_SETKEY_DEC_ALT
+  #define MBEDTLS_SM4_CRYPT_ECB_ALT
+  ~~~
 
 ## How to use libmbedtls in Terminal
 
@@ -156,20 +156,20 @@ The features of Nuclei Mbed TLS are listed below:
    # scalar K support n300 n900 nx900
    # vector K only support nx900 with _zve64x extension
    # MBEDTLS_ACC could be choosen in {scalar_k, vector_k, xlcrypt}, if set MBEDTLS_ACC None, means has no acceleration
-   make CORE=nx900 MBEDTLS_ACC=scalar_k DOWNLOAD=ddr all
+   $ make CORE=nx900 MBEDTLS_ACC=scalar_k DOWNLOAD=ddr all
    # or
-   make CORE=nx900 MBEDTLS_ACC=vector_k DOWNLOAD=ddr all
+   $ make CORE=nx900 MBEDTLS_ACC=vector_k DOWNLOAD=ddr all
    # or
-   make CORE=nx900 MBEDTLS_ACC= DOWNLOAD=ddr all  # no acceleration
+   $ make CORE=nx900 MBEDTLS_ACC= DOWNLOAD=ddr all  # no acceleration
    
    # Upload
    # upload to fpga
-   make CORE=nx900 DOWNLOAD=ddr upload
-   # or qemu, Note: qemu don't support vector_k at this time
-   make CORE=nx900 DOWNLOAD=ddr run_qemu
+   $ make CORE=nx900 DOWNLOAD=ddr upload
+   # or qemu, Note: qemu don't support vector_k at now
+   $ make CORE=nx900 DOWNLOAD=ddr run_qemu
    ~~~
    
-   **Note:** if you built with `DOWNLOAD=ilm`, please use 512K ilm/dlm,  **make sure your cpu bitstream configured with 512K ILM/DLM if you want to run on hardware **.
+   **Note:** if you built with `DOWNLOAD=ilm`,  **make sure your cpu bitstream configured with 512K ILM/DLM if you want to run on hardware**.
    
    ~~~sh
    # file: /path/to/nuclei_sdk/SoC/evalsoc/Board/nuclei_fpga_eval/Source/GCC/gcc_evalsoc_ilm.ld
@@ -190,15 +190,19 @@ Here are the logs of *Components/mbedtls/examples/selftest* in NX900 FPGA，DOWN
 
 ~~~sh
 $ make CORE=nx900 MBEDTLS_ACC=scalar_k DOWNLOAD=ilm all
+
 $ make CORE=nx900 MBEDTLS_ACC=scalar_k DOWNLOAD=ilm upload
+
+# or qemu, Note: qemu don't support vector_k at now
+$ make CORE=nx900 DOWNLOAD=ilm run_qemu
 ~~~
 
-log as follows(with deletion):
+Logs running on nx900 FPGA are as follows(in brief):
 ~~~log
-Nuclei SDK Build Time: May 21 2024, 18:07:24
-Download Mode: ILM
-CPU Frequency 50322800 Hz
-CPU HartID: 0
+  Nuclei SDK Build Time: May 21 2024, 18:07:24
+  Download Mode: ILM
+  CPU Frequency 50322800 Hz
+  CPU HartID: 0
 
   SHA-224 test #1: passed
   SHA-224 test #2: passed
@@ -300,7 +304,8 @@ CPU HartID: 0
 
 ## How to use libmbedtls in Nuclei Studio IDE
 
-1. Download Nuclei Studio IDE from https://www.nucleisys.com/download.php, please refer to https://www.nucleisys.com/upload/files/doc/nucleistudio/Nuclei_Studio_User_Guide_202402.pdf to get the detailed usage of Nuclei Studio IDE.
+1. Download Nuclei Studio IDE from https://www.nucleisys.com/download.php,  
+   please refer to https://www.nucleisys.com/upload/files/doc/nucleistudio/Nuclei_Studio_User_Guide_202402.pdf to get the detailed usage of Nuclei Studio IDE.
 
    ![Download_IDE](asserts/Download_IDE.png)
 
@@ -310,7 +315,7 @@ CPU HartID: 0
 
 
 
-3. Get **libmbedtls** zip package from https://github.com/Nuclei-Software/mbedtls , and import the zip package of **libmbedtls** until the Status is installed:
+3. Get **libmbedtls** zip package from https://github.com/Nuclei-Software/mbedtls , and import the zip package of **libmbedtls** until the Status is installed.
 
 ![npk_libmbedtls_import](asserts/npk_libmbedtls_import.png)
 
@@ -338,7 +343,7 @@ CPU HartID: 0
 
   
 
-**Note:** if you built with `DOWNLOAD=ilm`, please use 512K ilm/dlm,  **make sure your cpu bitstream configured with 512K ILM/DLM if you want to run on hardware **, and modify `nuclei_sdk/SoC/evalsoc/Board/nuclei_fpga_eval/Source/GCC/gcc_evalsoc_ilm.ld`
+**Note:** if you built with `DOWNLOAD=ilm`, please use 512K ilm/dlm,  **make sure your cpu bitstream configured with 512K ILM/DLM if you want to run on hardware**, and modify `nuclei_sdk/SoC/evalsoc/Board/nuclei_fpga_eval/Source/GCC/gcc_evalsoc_ilm.ld`
 
 ## Data performance
 

@@ -4,7 +4,7 @@
 
 This directory contains selftest example files.
 
-This example describes each crypto algorithm selftest process, you can use this example to verify the correctness of the hardware acceleration of the crypto algorithm. The crypto algorithms are as follows:
+This example describes each crypto algorithm selftest process, you can use this example to verify the correctness of scalar_k/vector_k/xlcrypto of the crypto algorithm. The crypto algorithms are as follows:
 
 - MD5
 - SHA1
@@ -27,20 +27,40 @@ This example describes each crypto algorithm selftest process, you can use this 
 - ECC SHORT WEIERSTRASS
 - ECC MONTGOMERY
 
-You can select the hardware acceleration of the corresponding algorithm by enabling the acceleration macros in `acc_config.h`, compile and run the example using hardware engine or software implement. Please refer to `mbedtls/accelerator/xlcrypto/README.md` for more details.
+**scalar_k:**  please refer to [scalar_k/README.md](scalar_k/README.md).
+
+**vector_k:** please refer to [vector_k/README.md](vector_k/README.md).
+
+**xlcrypto:** please refer to [xlcrypto/README.md](xlcrypto/README.md).
 
 ## How to run this application
 
-    # Assume that you can set up the Tools and Nuclei SDK environment
-    # cd to the cuttent directory
-    cd examples/selftest
-    # Clean the application first
-    make SOC=ns DOWNLOAD=sram clean
-    # Build and upload the application
-    make SOC=ns DOWNLOAD=sram upload
+```shell
+# Assume that you can set up the Tools and Nuclei SDK environment
+$ cd examples/selftest
+
+# Running on Nuclei Crypto Engine IP, assume that you use ns subsystem
+# Clean the application first
+$ make SOC=ns CORE=n300 MBEDTLS_ACC=xlcrypto DOWNLOAD=sram clean
+# Build and upload the application
+$ make SOC=ns CORE=n300 MBEDTLS_ACC=xlcrypto DOWNLOAD=sram upload
+
+# Running on RISC-V scalar_k extension
+# Clean the application first
+$ make SOC=evalsoc CORE=nx900 MBEDTLS_ACC=scalar_k DOWNLOAD=sram clean
+# Build and upload the application
+$ make SOC=evalsoc CORE=nx900 MBEDTLS_ACC=scalar_k DOWNLOAD=sram upload
+
+# Running on RISC-V vector_k extension
+# Clean the application first
+$ make SOC=evalsoc CORE=nx900 MBEDTLS_ACC=vector_k DOWNLOAD=sram clean
+# Build and upload the application
+$ make SOC=evalsoc CORE=nx900 MBEDTLS_ACC=vector_k DOWNLOAD=sram upload
+```
 
 ## Expected output as below:
 
+~~~log
     Nuclei SDK Build Time: Dec  7 2022, 21:27:22
     Download Mode: SRAM
     CPU Frequency 32000403 Hz
@@ -175,3 +195,4 @@ You can select the hardware acceleration of the corresponding algorithm by enabl
     Executed 12 test suites
 
     [ All tests PASS ]
+~~~
