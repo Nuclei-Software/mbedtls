@@ -15,7 +15,7 @@ STDCLIB ?= newlib_full
 # ARCH_EXT will default provide a required arch controlled by mbedtls/build.mk
 # If you want to override it, you need to pass extra arch ext list below
 # scalar k require ARCH_EXT ?= _zk_zks
-# vector k require ARCH_EXT ?= _zve64x_zvbb_zvkg_zvkned_zvknhb_zvksed_zvksh
+# vector k require ARCH_EXT ?= _zve64x_zvkn_zvks
 MBEDTLS_ACC ?= scalar_k
 
 ifeq ($(MBEDTLS_ACC),scalar_k)
@@ -24,8 +24,9 @@ endif
 
 ifeq ($(MBEDTLS_ACC),vector_k)
 # require at least _zve64x for vector k, so _zve32* is not supported
-ARCH_EXT ?= _zve64x_zvbb_zvkg_zvkned_zvknhb_zvksed_zvksh
+ARCH_EXT ?= _zve64x_zvkn_zvks
 endif
+
 SRCDIRS = .
 
 INCDIRS = .

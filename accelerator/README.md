@@ -20,7 +20,7 @@ MIDDLEWARE := mbedtls
 # ARCH_EXT will default provide a required arch controlled by mbedtls/build.mk
 # If you want to override it, you need to pass extra arch ext list below
 # scalar k require ARCH_EXT ?= _zk_zks
-# vector k require ARCH_EXT ?= _zve64x_zvbb_zvkg_zvkned_zvknhb_zvksed_zvksh
+# vector k require ARCH_EXT ?= _zve64x_zvkn_zvks
 MBEDTLS_ACC ?= scalar_k
 ~~~
 
