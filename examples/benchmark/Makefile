@@ -18,6 +18,14 @@ STDCLIB ?= newlib_full
 # vector k require ARCH_EXT ?= _zve64x_zvbb_zvkg_zvkned_zvknhb_zvksed_zvksh
 MBEDTLS_ACC ?= scalar_k
 
+ifeq ($(MBEDTLS_ACC),scalar_k)
+ARCH_EXT ?= _zk_zks
+endif
+
+ifeq ($(MBEDTLS_ACC),vector_k)
+# require at least _zve64x for vector k, so _zve32* is not supported
+ARCH_EXT ?= _zve64x_zvbb_zvkg_zvkned_zvknhb_zvksed_zvksh
+endif
 SRCDIRS = .
 
 INCDIRS = .
